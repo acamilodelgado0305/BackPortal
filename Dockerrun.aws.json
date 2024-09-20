@@ -1,0 +1,17 @@
+{
+    "AWSEBDockerrunVersion": 2,
+    "containerDefinitions": [
+      {
+        "name": "my-node-app",
+        "image": "", 
+        "memory": 512,
+        "essential": true,
+        "portMappings": [
+          {
+            "containerPort": 8182
+          }
+        ]
+      }
+    ]
+  }
+  
