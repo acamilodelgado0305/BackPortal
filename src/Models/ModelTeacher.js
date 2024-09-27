@@ -1,6 +1,7 @@
-import { Table, db } from '../database.js';
+import { Table, db } from '../awsconfig/database.js';
 import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
+
 
 // Crear Teacher
 const createTeacher = async (data = {}) => {

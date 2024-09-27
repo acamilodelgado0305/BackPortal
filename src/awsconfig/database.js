@@ -3,7 +3,7 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import dotenv from 'dotenv'
 
 let db;
-const Table = process.env.TABLE_TEACHERS_PORTAL;
+const Table = "teacher_portal";
 dotenv.config()
 
 try {

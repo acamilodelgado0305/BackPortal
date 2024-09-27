@@ -1,5 +1,5 @@
 import app from "./app.js";
-import "./database.js";
+import "./awsconfig/database.js";
 import dotenv from "dotenv";
 
 dotenv.config();
