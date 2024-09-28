@@ -6,7 +6,7 @@ import cors from "cors";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 
-import teacher from "./routes/routes.js";
+import routes from "./routes/index.js"
 import uploadFileToS3 from "./uploadImageToS3.js";
 
 dotenv.config();
@@ -16,7 +16,7 @@ const app = express();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173",""],
+    origin: ["http://localhost:5173","*"],
   })
 );
 app.use(express.json());
@@ -80,7 +80,7 @@ app.post("/api/upload", async (req, res) => {
   }
 });
 
-app.use("/api", teacher);
+app.use("/api", routes);
 
 const PORT = process.env.PORT;
 
