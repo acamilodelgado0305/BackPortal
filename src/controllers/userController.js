@@ -1,8 +1,8 @@
-import * as Teacher from '../Models/ModelTeacher.js';
+import * as User from '../Models/ModelUser.js';
 
-export const createTeacherHandler = async (req, res) => {
-    const teacherData = req.body;
-    const result = await Teacher.createTeacher(teacherData);
+export const createUserHandler = async (req, res) => {
+    const userData = req.body;
+    const result = await User.createUser(userData);
 
     if (result.success) {
         return res.status(201).json({ success: true, id: result.id });
@@ -10,8 +10,8 @@ export const createTeacherHandler = async (req, res) => {
     return res.status(500).json({ success: false, message: result.message });
 };
 
-export const readAllTeachersHandler = async (req, res) => {
-    const result = await Teacher.readAllTeachers();
+export const readAllUsersHandler = async (req, res) => {
+    const result = await User.readAllUsers();
 
     if (result.success) {
         return res.json({ success: true, data: result.data });
@@ -19,9 +19,9 @@ export const readAllTeachersHandler = async (req, res) => {
     return res.status(500).json({ success: false, message: result.message });
 };
 
-export const getTeacherByIdHandler = async (req, res) => {
+export const getUserByIdHandler = async (req, res) => {
     const { id } = req.params;
-    const result = await Teacher.getTeacherById(id);
+    const result = await User.getUserById(id);
 
     if (result.success) {
         return res.json({ success: true, data: result.data });
@@ -29,9 +29,9 @@ export const getTeacherByIdHandler = async (req, res) => {
     return res.status(404).json({ success: false, message: result.message });
 };
 
-export const deleteTeacherByIdHandler = async (req, res) => {
+export const deleteUserByIdHandler = async (req, res) => {
     const { id } = req.params;
-    const result = await Teacher.deleteTeacherById(id);
+    const result = await User.deleteUserById(id);
 
     if (result.success) {
         return res.json({ success: true, message: result.message });
@@ -39,10 +39,10 @@ export const deleteTeacherByIdHandler = async (req, res) => {
     return res.status(404).json({ success: false, message: result.message });
 };
 
-export const updateTeacherHandler = async (req, res) => {
+export const updateUserHandler = async (req, res) => {
     const { id } = req.params;
-    const teacherData = req.body;
-    const result = await Teacher.updateTeacher(id, teacherData);
+    const userData = req.body;
+    const result = await User.updateUser(id, userData);
 
     if (result.success) {
         return res.json({ success: true, id });

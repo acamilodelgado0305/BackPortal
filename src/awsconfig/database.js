@@ -3,7 +3,8 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import dotenv from 'dotenv'
 
 let db;
-const Table = "teacher_portal";
+const Table = "Teacher-zgr73wuthzeejbghyh3hxciwsm-prod";
+const UserTable = "UserStudyProgress-zgr73wuthzeejbghyh3hxciwsm-prod"
 dotenv.config()
 
 try {
@@ -32,5 +33,6 @@ try {
 
 export {
   db,
+  UserTable,
   Table
 };
