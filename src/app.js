@@ -16,7 +16,7 @@ const app = express();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173","https://portal.app.esturio.com"],
+    origin: ["http://localhost:5173", "https://a.app.esturio.com"],
   })
 );
 app.use(express.json());
