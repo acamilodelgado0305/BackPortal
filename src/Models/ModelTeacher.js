@@ -14,9 +14,11 @@ const createTeacher = async (data = {}) => {
       ...data,
       id: teacherId,  // Usar el UUID generado
       createdAt: timestamp,
-      updatedAt: timestamp
+      updatedAt: timestamp,
+      status: false  // Agregar el status por defecto
     }
   };
+
 
   try {
     await db.send(new PutCommand(params));
