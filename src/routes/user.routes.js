@@ -4,7 +4,8 @@ import {
     readAllUsersHandler,
     getUserByIdHandler,
     deleteUserByIdHandler,
-    updateUserHandler  // Asegúrate de tener esta función en el controlador
+    updateUserHandler,
+    loginUserHandler
 } from '../controllers/userController.js';
 
 const router = express.Router();
@@ -23,5 +24,9 @@ router.delete("/:id", deleteUserByIdHandler);
 
 // Actualizar un usuario por ID
 router.put("/:id", updateUserHandler);
+
+
+// Ruta para el inicio de sesión (login)
+router.post("/login", loginUserHandler);
 
 export default router;

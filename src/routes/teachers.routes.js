@@ -1,5 +1,5 @@
 import express from "express";
-import * as teachersController from "../controllers/teacherController.js"; 
+import * as teachersController from "../controllers/teacherController.js";
 
 const router = express.Router();
 
@@ -8,5 +8,6 @@ router.get("/", teachersController.readAllTeachersHandler);
 router.get("/:id", teachersController.getTeacherByIdHandler);
 router.delete("/:id", teachersController.deleteTeacherByIdHandler);
 router.put("/:id", teachersController.updateTeacherHandler);
+
 
 export default router;
