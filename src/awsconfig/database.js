@@ -3,8 +3,8 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import dotenv from 'dotenv'
 
 let db;
-const Table = "textNote-zgr73wuthzeejbghyh3hxciwsm-prod";
-const UserTable = "UserStudyProgress-zgr73wuthzeejbghyh3hxciwsm-prod"
+const Table = "teacher_portal";
+const UserTable = "users-Esturio"
 dotenv.config()
 
 try {
