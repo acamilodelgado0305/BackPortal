@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 
 let db;
 const Table = "teacher_portal";
+const UserTable = "users-Esturio"
 const studentTable = "student_portal";
 dotenv.config()
 
@@ -33,6 +34,7 @@ try {
 
 export {
   db,
+  UserTable,
   Table,
   studentTable
 };
