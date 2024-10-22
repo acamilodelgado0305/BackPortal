@@ -1,9 +1,7 @@
 import express from "express";
-import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 
 import routes from "./routes/index.js"
@@ -16,7 +14,7 @@ const app = express();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://a.app.esturio.com/"],
+    origin: ["http://localhost:5173", "https://a.app.esturio.com"],
   })
 );
 app.use(express.json());
