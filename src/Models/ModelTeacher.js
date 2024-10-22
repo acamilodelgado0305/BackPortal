@@ -1,4 +1,4 @@
-import { Table, db } from '../awsconfig/database.js';
+import { Table, UserTable, db } from '../awsconfig/database.js';
 import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -8,20 +8,34 @@ const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
   const teacherId = uuidv4();  // Generar un UUID para un nuevo teacher
 
-  const params = {
-    TableName: Table,
+ const { password, ...dataWithoutPassword } = data;
+
+ const params = {
+   TableName: Table,
+   Item: {
+     ...dataWithoutPassword,  
+     id: teacherId, 
+     createdAt: timestamp,
+     updatedAt: timestamp,
+     status: false 
+   }
+ };
+
+  const userParams = {
+    TableName: UserTable,
     Item: {
-      ...data,
-      id: teacherId,  // Usar el UUID generado
+      id: teacherId,
+      email: data.email,
+      password: data.password,
+      role: 'teacher',
       createdAt: timestamp,
       updatedAt: timestamp,
-      status: false  // Agregar el status por defecto
     }
+
   };
-
-
   try {
     await db.send(new PutCommand(params));
+    await db.send(new PutCommand(userParams));
     return { success: true, id: teacherId };
   } catch (error) {
     console.error('Error creating teacher:', error.message);

@@ -1,13 +1,23 @@
 import * as Teacher from '../Models/ModelTeacher.js';
+import bcrypt from 'bcrypt';
 
 export const createTeacherHandler = async (req, res) => {
     const teacherData = req.body;
-    const result = await Teacher.createTeacher(teacherData);
+    try {
+        if (teacherData.password) {
+            const salt = await bcrypt.genSalt(10);
+            teacherData.password = await bcrypt.hash(teacherData.password, salt);
+        }
 
-    if (result.success) {
-        return res.status(201).json({ success: true, id: result.id });
+        const result = await Teacher.createTeacher(teacherData);
+
+        if (result.success) {
+            return res.status(201).json({ success: true, id: result.id });
+        }
+        return res.status(500).json({ success: false, message: result.message });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error creating teacher', error: error.message });
     }
-    return res.status(500).json({ success: false, message: result.message });
 };
 
 export const readAllTeachersHandler = async (req, res) => {
