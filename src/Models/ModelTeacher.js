@@ -1,6 +1,7 @@
 import { Table, UserTable, db } from '../awsconfig/database.js';
 import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
+import { emailExists } from '../helpers/IsEmailExist.js';
 
 
 // Crear Teacher
@@ -9,6 +10,11 @@ const createTeacher = async (data = {}) => {
   const teacherId = uuidv4();  // Generar un UUID para un nuevo teacher
 
  const { password, ...dataWithoutPassword } = data;
+
+ const isEmailTaken = await emailExists(data.email, UserTable);
+  if (isEmailTaken) {
+    return { success: false, message: 'Email is already registered.' };
+  }
 
  const params = {
    TableName: Table,
