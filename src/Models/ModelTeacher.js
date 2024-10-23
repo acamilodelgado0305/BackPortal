@@ -30,7 +30,8 @@ const createTeacher = async (data = {}) => {
   const userParams = {
     TableName: UserTable,
     Item: {
-      id: teacherId,
+      id: uuidv4(),
+      teacherId: teacherId,
       email: data.email,
       password: data.password,
       role: 'teacher',
