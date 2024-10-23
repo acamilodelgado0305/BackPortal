@@ -1,5 +1,7 @@
 import * as Teacher from '../Models/ModelTeacher.js';
 import bcrypt from 'bcrypt';
+import { Table } from '../awsconfig/database.js';
+import { emailExists } from '../helpers/IsEmailExist.js';
 
 export const createTeacherHandler = async (req, res) => {
     const teacherData = req.body;
@@ -19,6 +21,17 @@ export const createTeacherHandler = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error creating teacher', error: error.message });
     }
 };
+
+export const checkTeacherEmailExists = async (req, res) => {
+    try {
+        const { email } = req.params;
+        const result = await emailExists(email, Table); 
+        return res.status(200).json({ isEmail: result }); 
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error checking email', error: error.message });
+    }
+};
+
 
 export const readAllTeachersHandler = async (req, res) => {
     const result = await Teacher.readAllTeachers();
