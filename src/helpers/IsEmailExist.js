@@ -1,4 +1,4 @@
-import { db } from '../awsconfig/database';
+import { db } from '../awsconfig/database.js'; 
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 
 
