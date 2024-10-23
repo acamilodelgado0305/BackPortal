@@ -9,6 +9,6 @@ router.get("/:id", teachersController.getTeacherByIdHandler);
 router.delete("/:id", teachersController.deleteTeacherByIdHandler);
 router.put("/:id", teachersController.updateTeacherHandler);
 
-router.get("/:email",teachersController.checkTeacherEmailExists);
+router.get("/email/:email",teachersController.checkTeacherEmailExists);
 
 export default router;
