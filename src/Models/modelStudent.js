@@ -2,25 +2,8 @@ import { studentTable, db, UserTable } from '../awsconfig/database.js';
 import { PutCommand, GetCommand, ScanCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt'; // Usar bcrypt para encriptar contraseñas
+import { emailExists } from '../helpers/IsEmailExist.js';
 
-// Verificar si el correo ya está registrado
-const emailExists = async (email) => {
-  const params = {
-    TableName: UserTable,
-    FilterExpression: 'email = :email',
-    ExpressionAttributeValues: {
-      ':email': email
-    }
-  };
-
-  try {
-    const { Items } = await db.send(new ScanCommand(params));
-    return Items.length > 0;  // Retorna true si hay algún usuario con ese correo
-  } catch (error) {
-    console.error('Error checking email existence:', error.message);
-    throw new Error('Error checking email');
-  }
-};
 
 // Crear Student y Usuario
 const createStudent = async (data = {}) => {
@@ -34,7 +17,7 @@ const createStudent = async (data = {}) => {
   }
 
   // Verificar si el correo ya está registrado en la tabla de usuarios
-  const isEmailTaken = await emailExists(data.email);
+  const isEmailTaken = await emailExists(data.email, UserTable);
   if (isEmailTaken) {
     return { success: false, message: 'Email is already registered.' };
   }
