@@ -5,13 +5,18 @@ import {
     getUserByIdHandler,
     deleteUserByIdHandler,
     updateUserHandler,
-    loginUserHandler
+    loginUserHandler,
+    verifyEmailHandler,
+    resendVerificationCodeHandler
 } from '../controllers/userController.js';
 
 const router = express.Router();
 
 // Crear un nuevo usuario
 router.post("/", createUserHandler);
+
+router.post('/verify-email', verifyEmailHandler);
+router.post('/resend-verification', resendVerificationCodeHandler);
 
 // Leer todos los usuarios
 router.get("/", readAllUsersHandler);
