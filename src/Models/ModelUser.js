@@ -1,38 +1,44 @@
-import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { db, UserTable } from '../awsconfig/database.js';
 import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import { cognitoService } from '../awsconfig/cognitoUtils.js';
 
 // Crear Usuario
 export const createUser = async (data = {}) => {
-    const timestamp = new Date().toISOString();
-    const userId = uuidv4();  // Generar un UUID para un nuevo usuario
-
-    // Hash de la contraseña
-    const hashedPassword = await bcrypt.hash(data.password, 10);  // Salt rounds = 10
-
-    const params = {
-        TableName: UserTable,
-        Item: {
-            id: userId,  // UUID generado
-            email: data.email,
-            password: hashedPassword,  // Contraseña encriptada
-            role: data.role,  // Rol: 'admin', 'teacher', o 'student'
-            createdAt: timestamp,
-            updatedAt: timestamp
-        }
-    };
-
     try {
-        await db.send(new PutCommand(params));  // Guardar en DynamoDB
+        // 1. Registrar usuario en Cognito
+        const cognitoResult = await cognitoService.signUp(data.email, data.password);
+        
+        // 2. Confirmar automáticamente el usuario (opcional, depende de tus requisitos)
+        await cognitoService.adminConfirmSignUp(data.email);
+
+        // 3. Crear entrada en DynamoDB para datos adicionales
+        const timestamp = new Date().toISOString();
+        const userId = cognitoResult.userSub; // Usar el ID de Cognito
+
+        const params = {
+            TableName: UserTable,
+            Item: {
+                id: userId,
+                email: data.email,
+                role: data.role,
+                createdAt: timestamp,
+                updatedAt: timestamp
+                // No almacenamos la contraseña en DynamoDB ya que está en Cognito
+            }
+        };
+
+        await db.send(new PutCommand(params));
         return { success: true, id: userId };
     } catch (error) {
-        console.error('Error creando usuario:', error.message);
-        return { success: false, message: 'Error creando usuario', error: error.message };
+        console.error('Error creando usuario:', error);
+        return { success: false, message: error.message };
     }
 };
 
-// Leer todos los Usuarios
+// La función de login se moverá al controlador
+
+// Las demás funciones permanecen igual pero sin manejar contraseñas
 export const readAllUsers = async () => {
     const params = {
         TableName: UserTable
@@ -43,7 +49,7 @@ export const readAllUsers = async () => {
         return { success: true, data: Items };
     } catch (error) {
         console.error('Error leyendo usuarios:', error.message);
-        return { success: false, message: 'Error leyendo usuarios', error: error.message, data: null };
+        return { success: false, message: 'Error leyendo usuarios', error: error.message };
     }
 };
 
