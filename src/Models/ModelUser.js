@@ -1,21 +1,37 @@
-import { v4 as uuidv4 } from 'uuid';
+import { ListUsersCommand, AdminConfirmSignUpCommand, SignUpCommand } from '@aws-sdk/client-cognito-identity-provider';
 import { db, UserTable } from '../awsconfig/database.js';
-import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
-import { cognitoService } from '../awsconfig/cognitoUtils.js';
+import { PutCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { cognitoClient, cognitoService } from '../awsconfig/cognitoUtils.js';
 
-// Crear Usuario
-export const createUser = async (data = {}) => {
+
+// Función para verificar si el usuario existe en `UserTable`
+const checkUserExistsInUserTable = async (email) => {
+    const params = {
+        TableName: UserTable,
+        FilterExpression: 'email = :email',
+        ExpressionAttributeValues: { ':email': email }
+    };
+    const { Items } = await db.send(new ScanCommand(params));
+    return Items.length > 0;
+};
+
+// Crear usuario en Cognito y `UserTable`
+export const createUser = async (data) => {
     try {
-        // 1. Registrar usuario en Cognito
-        const cognitoResult = await cognitoService.signUp(data.email, data.password);
-        
-        // 2. Confirmar automáticamente el usuario (opcional, depende de tus requisitos)
-        await cognitoService.adminConfirmSignUp(data.email);
+        // Crear usuario en Cognito sin confirmación automática
+        const cognitoResult = await cognitoService.signUp(data.email, data.password, data.phone_number);
+        console.log('Usuario registrado en Cognito:', cognitoResult.userSub);
 
-        // 3. Crear entrada en DynamoDB para datos adicionales
+        // Verificar si el usuario ya existe en `UserTable`
+        const userExists = await checkUserExistsInUserTable(data.email);
+        if (userExists) {
+            console.log('El correo electrónico ya está registrado en UserTable. No se creará un nuevo registro.');
+            return { success: true, message: 'Usuario registrado en Cognito, ya existente en UserTable.' };
+        }
+
+        // Guardar en `UserTable` si no existe
         const timestamp = new Date().toISOString();
-        const userId = cognitoResult.userSub; // Usar el ID de Cognito
-
+        const userId = cognitoResult.userSub;
         const params = {
             TableName: UserTable,
             Item: {
@@ -24,32 +40,15 @@ export const createUser = async (data = {}) => {
                 role: data.role,
                 createdAt: timestamp,
                 updatedAt: timestamp
-                // No almacenamos la contraseña en DynamoDB ya que está en Cognito
             }
         };
-
         await db.send(new PutCommand(params));
-        return { success: true, id: userId };
+
+        return { success: true, id: userId, message: "Usuario creado exitosamente en Cognito y registrado en UserTable." };
+
     } catch (error) {
         console.error('Error creando usuario:', error);
         return { success: false, message: error.message };
-    }
-};
-
-// La función de login se moverá al controlador
-
-// Las demás funciones permanecen igual pero sin manejar contraseñas
-export const readAllUsers = async () => {
-    const params = {
-        TableName: UserTable
-    };
-
-    try {
-        const { Items = [] } = await db.send(new ScanCommand(params));
-        return { success: true, data: Items };
-    } catch (error) {
-        console.error('Error leyendo usuarios:', error.message);
-        return { success: false, message: 'Error leyendo usuarios', error: error.message };
     }
 };
 
