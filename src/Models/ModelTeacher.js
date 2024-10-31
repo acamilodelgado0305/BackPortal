@@ -50,11 +50,11 @@ const createTeacher = async (data = {}) => {
   }
 };
 
-// Actualizar Teacher
+
 const updateTeacher = async (id, data = {}) => {
   const timestamp = new Date().toISOString();
 
-  // Verificar si el Teacher existe antes de actualizar
+
   const existingTeacher = await getTeacherById(id);
 
   if (!existingTeacher.success) {
@@ -64,10 +64,10 @@ const updateTeacher = async (id, data = {}) => {
   const params = {
     TableName: Table,
     Item: {
-      ...existingTeacher.data,  // Mantener los datos existentes
-      ...data,                  // Sobrescribir con los nuevos datos
-      id: id,                   // Asegurar que el id es correcto
-      updatedAt: timestamp      // Actualizar el campo updatedAt
+      ...existingTeacher.data, 
+      ...data,               
+      id: id,                
+      updatedAt: timestamp      
     }
   };
 
@@ -80,7 +80,6 @@ const updateTeacher = async (id, data = {}) => {
   }
 };
 
-// Leer todos los Teachers
 const readAllTeachers = async () => {
   const params = {
     TableName: Table
