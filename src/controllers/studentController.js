@@ -1,4 +1,4 @@
-import * as student from '../Models/modelStudent.js';
+import * as student from '../Models/ModelStudent.js';
 
 export const createstudentHandler = async (req, res) => {
     const studentData = req.body;

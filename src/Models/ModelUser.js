@@ -1,59 +1,97 @@
-import bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
+import {
+    ListUsersCommand,
+    AdminConfirmSignUpCommand,
+    SignUpCommand
+} from '@aws-sdk/client-cognito-identity-provider';
 import { db, UserTable } from '../awsconfig/database.js';
-import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import {
+    PutCommand,
+    ScanCommand,
+    GetCommand,
+    DeleteCommand,
+    UpdateCommand
+} from '@aws-sdk/lib-dynamodb';
+import { cognitoClient, cognitoService } from '../awsconfig/cognitoUtils.js';
 
-// Crear Usuario
-export const createUser = async (data = {}) => {
-    const timestamp = new Date().toISOString();
-    const userId = uuidv4();  // Generar un UUID para un nuevo usuario
-
-    // Hash de la contraseña
-    const hashedPassword = await bcrypt.hash(data.password, 10);  // Salt rounds = 10
-
+// Función para verificar si el usuario existe en `UserTable`
+const checkUserExistsInUserTable = async (email) => {
     const params = {
         TableName: UserTable,
-        Item: {
-            id: userId,  // UUID generado
-            email: data.email,
-            password: hashedPassword,  // Contraseña encriptada
-            role: data.role,  // Rol: 'admin', 'teacher', o 'student'
-            createdAt: timestamp,
-            updatedAt: timestamp
-        }
+        FilterExpression: 'email = :email',
+        ExpressionAttributeValues: { ':email': email }
     };
-
     try {
-        await db.send(new PutCommand(params));  // Guardar en DynamoDB
-        return { success: true, id: userId };
+        const { Items } = await db.send(new ScanCommand(params));
+        return Items && Items.length > 0;
     } catch (error) {
-        console.error('Error creando usuario:', error.message);
-        return { success: false, message: 'Error creando usuario', error: error.message };
+        console.error('Error verificando usuario existente:', error);
+        throw new Error('Error al verificar usuario existente');
     }
 };
 
-// Leer todos los Usuarios
-export const readAllUsers = async () => {
-    const params = {
-        TableName: UserTable
-    };
-
+// Crear usuario en Cognito y `UserTable`
+export const createUser = async (data) => {
     try {
-        const { Items = [] } = await db.send(new ScanCommand(params));
-        return { success: true, data: Items };
+        if (!data.email || !data.password || !data.role) {
+            return {
+                success: false,
+                message: 'Email, password y role son requeridos'
+            };
+        }
+
+        // Verificar si el usuario ya existe en `UserTable`
+        const userExists = await checkUserExistsInUserTable(data.email);
+        if (userExists) {
+            return {
+                success: false,
+                message: 'El correo electrónico ya está registrado'
+            };
+        }
+
+        // Crear usuario en Cognito
+        const cognitoResult = await cognitoService.signUp(data.email, data.password);
+        console.log('Usuario registrado en Cognito:', cognitoResult.userSub);
+
+        // Guardar en `UserTable`
+        const timestamp = new Date().toISOString();
+        const userId = cognitoResult.userSub;
+        const params = {
+            TableName: UserTable,
+            Item: {
+                id: userId,
+                email: data.email,
+                role: data.role,
+                emailVerified: false,
+                createdAt: timestamp,
+                updatedAt: timestamp
+            }
+        };
+        await db.send(new PutCommand(params));
+
+        return {
+            success: true,
+            id: userId,
+            message: "Usuario creado exitosamente"
+        };
+
     } catch (error) {
-        console.error('Error leyendo usuarios:', error.message);
-        return { success: false, message: 'Error leyendo usuarios', error: error.message, data: null };
+        console.error('Error creando usuario:', error);
+        return {
+            success: false,
+            message: error.message
+        };
     }
 };
 
 // Leer Usuario por ID
 export const getUserById = async (id) => {
+    if (!id) {
+        return { success: false, message: 'ID es requerido' };
+    }
+
     const params = {
         TableName: UserTable,
-        Key: {
-            id: id
-        }
+        Key: { id }
     };
 
     try {
@@ -63,64 +101,95 @@ export const getUserById = async (id) => {
         }
         return { success: true, data: Item };
     } catch (error) {
-        console.error(`Error leyendo usuario con id = ${id}:`, error.message);
-        return { success: false, message: `Error leyendo usuario con id = ${id}`, error: error.message };
+        console.error('Error leyendo usuario:', error);
+        return {
+            success: false,
+            message: 'Error al obtener usuario'
+        };
     }
 };
 
-// Eliminar Usuario por ID
+// Eliminar Usuario
 export const deleteUserById = async (id) => {
+    if (!id) {
+        return { success: false, message: 'ID es requerido' };
+    }
+
     const params = {
         TableName: UserTable,
-        Key: {
-            id: id
-        }
+        Key: { id }
     };
 
     try {
         await db.send(new DeleteCommand(params));
-        return { success: true, message: `Usuario con id = ${id} eliminado correctamente` };
+        return {
+            success: true,
+            message: 'Usuario eliminado correctamente'
+        };
     } catch (error) {
-        console.error(`Error eliminando usuario con id = ${id}:`, error.message);
-        return { success: false, message: `Error eliminando usuario con id = ${id}`, error: error.message };
+        console.error('Error eliminando usuario:', error);
+        return {
+            success: false,
+            message: 'Error al eliminar usuario'
+        };
     }
 };
 
 // Actualizar Usuario
 export const updateUser = async (id, data) => {
-    const timestamp = new Date().toISOString();
-
-    // Si se está actualizando la contraseña, encriptarla
-    if (data.password) {
-        data.password = await bcrypt.hash(data.password, 10);  // Salt rounds = 10
+    if (!id || !data) {
+        return { success: false, message: 'ID y datos son requeridos' };
     }
+
+    const timestamp = new Date().toISOString();
+    const updateExpression = [];
+    const expressionAttributeNames = {};
+    const expressionAttributeValues = {};
+
+    // Construir dinámicamente la expresión de actualización
+    if (data.email) {
+        updateExpression.push('#email = :email');
+        expressionAttributeNames['#email'] = 'email';
+        expressionAttributeValues[':email'] = data.email;
+    }
+
+    if (data.role) {
+        updateExpression.push('#role = :role');
+        expressionAttributeNames['#role'] = 'role';
+        expressionAttributeValues[':role'] = data.role;
+    }
+
+    // Siempre actualizar updatedAt
+    updateExpression.push('updatedAt = :updatedAt');
+    expressionAttributeValues[':updatedAt'] = timestamp;
 
     const params = {
         TableName: UserTable,
         Key: { id },
-        UpdateExpression: 'set email = :email, #role = :role, password = :password, updatedAt = :updatedAt',
-        ExpressionAttributeNames: {
-            '#role': 'role'
-        },
-        ExpressionAttributeValues: {
-            ':email': data.email,
-            ':role': data.role,
-            ':password': data.password,
-            ':updatedAt': timestamp
-        },
-        ReturnValues: 'UPDATED_NEW'
+        UpdateExpression: `SET ${updateExpression.join(', ')}`,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: expressionAttributeValues,
+        ReturnValues: 'ALL_NEW'
     };
 
     try {
-        const result = await db.send(new PutCommand(params));
+        const result = await db.send(new UpdateCommand(params));
         return { success: true, data: result.Attributes };
     } catch (error) {
-        console.error(`Error actualizando usuario con id = ${id}:`, error.message);
-        return { success: false, message: `Error actualizando usuario con id = ${id}`, error: error.message };
+        console.error('Error actualizando usuario:', error);
+        return {
+            success: false,
+            message: 'Error al actualizar usuario'
+        };
     }
 };
 
+// Obtener Usuario por Email
 export const getUserByEmail = async (email) => {
+    if (!email) {
+        return { success: false, message: 'Email es requerido' };
+    }
+
     const params = {
         TableName: UserTable,
         FilterExpression: 'email = :email',
@@ -130,13 +199,58 @@ export const getUserByEmail = async (email) => {
     };
 
     try {
-        const { Items } = await db.send(new ScanCommand(params));  // Usar ScanCommand en lugar de QueryCommand
-        if (Items.length === 0) {
-            return null;  // No se encontró el usuario
+        const { Items } = await db.send(new ScanCommand(params));
+        if (!Items || Items.length === 0) {
+            return { success: false, message: 'Usuario no encontrado' };
         }
-        return Items[0];  // Devolver el primer usuario encontrado
+        return { success: true, data: Items[0] };
     } catch (error) {
-        console.error('Error obteniendo usuario por email:', error.message);
-        throw new Error('Error obteniendo usuario');
+        console.error('Error obteniendo usuario por email:', error);
+        return {
+            success: false,
+            message: 'Error al obtener usuario'
+        };
+    }
+};
+
+// Verificar Email de Usuario
+export const verifyUserEmail = async (email, code) => {
+    try {
+        // Verificar el código con Cognito
+        const verifyResult = await cognitoService.confirmSignUp(email, code);
+
+        if (!verifyResult.success) {
+            throw new Error('Error al verificar el email');
+        }
+
+        // Actualizar el estado en DynamoDB
+        const userResult = await getUserByEmail(email);
+        if (!userResult.success) {
+            throw new Error('Usuario no encontrado en la base de datos');
+        }
+
+        const params = {
+            TableName: UserTable,
+            Key: { id: userResult.data.id },
+            UpdateExpression: "set emailVerified = :v, updatedAt = :u",
+            ExpressionAttributeValues: {
+                ":v": true,
+                ":u": new Date().toISOString()
+            },
+            ReturnValues: "ALL_NEW"
+        };
+
+        await db.send(new UpdateCommand(params));
+
+        return {
+            success: true,
+            message: "Email verificado exitosamente"
+        };
+    } catch (error) {
+        console.error('Error en la verificación del email:', error);
+        return {
+            success: false,
+            message: error.message
+        };
     }
 };

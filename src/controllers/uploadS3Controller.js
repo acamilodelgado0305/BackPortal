@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import uploadFileToS3 from "../uploadImageToS3.js";
+import uploadFileToS3 from "../uploadFileToS3.js";
 import { getFileExtension, createFileObject } from "../helpers/uploadS3File.helpers.js"
 
 
