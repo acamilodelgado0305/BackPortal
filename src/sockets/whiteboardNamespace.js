@@ -1,9 +1,9 @@
 // whiteboardNamespace.js
-import events from "../enums/whiteboardEvents.js";
+import events  from "../enums/whiteboardEvents.js";
 
 const initWhiteboard = (io) => {
   const whiteboardNamespace = io.of("/whiteboard");
-
+console.log('Prueba enums '+events.CONNECTION)
   whiteboardNamespace.on(events.CONNECTION, (socket) => {
     console.log("Nuevo cliente conectado a la pizarra");
 
@@ -11,6 +11,7 @@ const initWhiteboard = (io) => {
       console.log(room);
       socket.join(room);
     });
+
 
     socket.on(events.AUDIOFILE_OPENED, (fileData) => {
       console.log("FILE:" + JSON.stringify(fileData.name));
