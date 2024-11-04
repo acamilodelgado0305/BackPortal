@@ -1,7 +1,7 @@
 // whiteboardNamespace.js
 
 import events from "../enums/whiteboardEvents.js";
-import { handleJoinRoom, handleAudioFileOpened, handleDisconnect } from '../controllers/whiteboardControler.js';
+import { handleJoinRoom, handleAudioFileOpened, handleDisconnect, handleChangeColor, handleMouseMove, handleMouseDown, handleToggleDrawingMode, handleMouseUp } from '../controllers/whiteboardControler.js';
 
 const initWhiteboard = (io) => {
   const whiteboardNamespace = io.of("/whiteboard");
@@ -13,7 +13,15 @@ const initWhiteboard = (io) => {
 
     handleJoinRoom(socket);
     handleAudioFileOpened(socket);
-    handleDisconnect(socket);
+    handleDisconnect(socket); 
+
+    handleChangeColor(socket);
+    handleMouseMove(socket);
+    handleMouseDown(socket)
+    handleToggleDrawingMode(socket);
+    handleMouseUp(socket)
+
+
   });
 };
 
