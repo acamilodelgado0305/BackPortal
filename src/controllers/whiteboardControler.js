@@ -18,6 +18,23 @@ export const handleAudioFileOpened = (socket) => {
   });
 };
 
+export const handleImageFileOpened = (socket) =>{
+  socket.on(events.IMAGE_BOARD, (data)=>{ 
+    const { room } = data;
+    socket.to(room).emit(events.IMAGE_BOARD, data)
+    console.log('Imagen subida a la pizarra ')
+
+  })
+}
+
+export const handleMoveImage = (socket) =>{
+  socket.on(events.MOVE_IMAGE, (data) => {
+  const { room } = data;
+  socket.to(room).emit(events.IMAGE_BOARD, data)
+  console.log('Moviendo imagen de la pizzarra a la pizarra '+JSON.stringify(data))
+  })
+}
+
 export const handleDisconnect = (socket) => {
   socket.on(events.DISCONNECT, () => {
     console.log("Cliente desconectado de la pizarra");
@@ -32,11 +49,18 @@ export const handleChangeColor = (socket) => {
   })  
   
 }
-export const handleMouseMove = (socket) => {
-  socket.on('mouseMove', (stage)=>{
-    socket.to('1').emit('mouseMove', stage); 
+export const handleMouseMoveDraw = (socket) => {
+  socket.on('mouseMoveDraw', (position)=>{
+    socket.to('1').emit('mouseMoveDraw', position); 
   }) 
  
+}
+
+export const handleMouseMoveErase = (socket) => {
+  socket.on('mouseMoveErase', (position)=>{
+    socket.to('1').emit('mouseMoveErase', position); 
+  }
+  )
 }
 
 export const handleMouseDown = (socket) =>{
