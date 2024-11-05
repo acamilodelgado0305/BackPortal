@@ -38,53 +38,61 @@ export const handleDisconnect = (socket) => {
 };
 
 export const handleChangeColor = (socket) => {
-  socket.on('changeColor', (color)=>{
-    console.log('socketid' +socket.room )
-    socket.to(socket.room).emit('changeColor', color); 
-     console.log('Se cambió de color a : ' + color)
+  socket.on(events.CHANGE_COLOR, (color)=>{
+    socket.to(socket.room).emit(events.CHANGE_COLOR, color); 
   })  
 }
 
 export const handleChangeLineWidth = (socket)=>{
-  socket.on('changeLineWidth', (value)=>{
-    socket.to(socket.room).emit('changeLineWidth', value); 
-     console.log('Se cambió el grosor a : ' + value)
+  socket.on(events.CHANGE_LINE_WIDTH, (value)=>{
+    socket.to(socket.room).emit(events.CHANGE_LINE_WIDTH, value); 
   })
 }
 
 export const handleMouseMoveDraw = (socket) => {
-  socket.on('mouseMoveDraw', (position)=>{
-    socket.to(socket.room).emit('mouseMoveDraw', position); 
+  socket.on(  events.MOUSE_MOVE_DRAW, (position)=>{
+    socket.to(socket.room).emit( events.MOUSE_MOVE_DRAW, position); 
   }) 
  
 }
 
 export const handleMouseMoveErase = (socket) => {
-  socket.on('mouseMoveErase', (position)=>{
-    socket.to(socket.room).emit('mouseMoveErase', position); 
+  socket.on(events.MOUSE_MOVE_ERASE, (position)=>{
+    socket.to(socket.room).emit(events.MOUSE_MOVE_ERASE, position); 
   }
   )
 }
 
 export const handleMouseDown = (socket) =>{
-  socket.on('mouseDown', (position)=>{
-    socket.to(socket.room).emit('mouseDown', position); 
+  socket.on(events.MOUSE_DOWN, (position)=>{
+    socket.to(socket.room).emit( events.MOUSE_DOWN, position); 
     console.log('mouseDown position: '+ (position && JSON.stringify(position)))
     }) 
  
 }
 
 export const handleToggleDrawingMode = (socket) => {
-  socket.on('toggleDrawingMode', ()=>{
-    socket.to(socket.room).emit('toggleDrawingMode');   
-    console.log('handleToggleDrawingMode')
+  socket.on(events.TOGGLE_DRAWING_MODE, ()=>{
+    socket.to(socket.room).emit(events.TOGGLE_DRAWING_MODE);   
     })
   
 }
 export const handleMouseUp = (socket) => {
-  socket.on('mouseUp', ()=>{
-    socket.to(socket.room).emit('mouseUp'); 
-    console.log('handleMouseUp')  
+  socket.on(events.MOUSE_UP, ()=>{
+    socket.to(socket.room).emit(events.MOUSE_UP); 
     })
+}
+
   
+export const handleChangeDrawTool = (socket) => {
+  socket.on(events.CHANGE_CURRENT_DRAW_TOOL, (payload)=>{
+    socket.to(socket.room).emit(events.CHANGE_CURRENT_DRAW_TOOL, payload);  
+    console.log('Cambio la forma '+JSON.stringify(payload))
+  })
+}
+
+export const handleChangeTool = (socket) =>{
+  socket.on(events.TOOGLE_TEXT_MODE, ()=>{
+    socket.to(socket.room).emit(events.TOOGLE_TEXT_MODE); 
+  })
 }
