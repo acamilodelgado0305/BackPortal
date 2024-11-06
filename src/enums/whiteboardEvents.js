@@ -15,6 +15,9 @@ const events = {
     MOUSE_UP:'mouseUp',
     CHANGE_CURRENT_DRAW_TOOL:'changeCurrentDrawTool',
     TOOGLE_TEXT_MODE:'toogleTextMode',
+    TEXT_POSITION_INITIALIZED: 'textPositionInitialized',
+    CURRENT_TEXT_UPDATED: 'currentTextUpdated',
+    TEXT_ADDED: 'textAdded'
 }
   
   export default events;

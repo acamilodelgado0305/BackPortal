@@ -96,3 +96,22 @@ export const handleChangeTool = (socket) =>{
     socket.to(socket.room).emit(events.TOOGLE_TEXT_MODE); 
   })
 }
+
+export const handleInitializeTextPosition = (socket)=>{
+  socket.on(events.TEXT_POSITION_INITIALIZED, (position)=>{
+    socket.to(socket.room).emit(events.TEXT_POSITION_INITIALIZED, position); 
+  })
+}
+
+
+export const handleUpdateCurrentText = (socket) =>{
+  socket.on(events.CURRENT_TEXT_UPDATED, (text)=>{
+    socket.to(socket.room).emit(events.CURRENT_TEXT_UPDATED, text); 
+  })
+}
+
+export const handleAddTextToList = (socket) =>{
+  socket.on(events.TEXT_ADDED, ()=>{
+    socket.to(socket.room).emit(events.TEXT_ADDED); 
+  })
+}
