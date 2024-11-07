@@ -17,7 +17,14 @@ const events = {
     TOOGLE_TEXT_MODE:'toogleTextMode',
     TEXT_POSITION_INITIALIZED: 'textPositionInitialized',
     CURRENT_TEXT_UPDATED: 'currentTextUpdated',
-    TEXT_ADDED: 'textAdded'
+    TEXT_ADDED: 'textAdded',
+    TOOGLE_DRUG_MODE:'toogleDrugMode',
+    CLEAR_WHITEBOARD: 'clearWhiteBoard',
+    UNDO_BOARD_STATE:'undoBoardState',
+    REDO_BOARD_STATE:'redoBoardState',
+    GO_TO_NEXT_PAGE:'goToNextPage',
+    GO_TO_PREVIOUS_PAGE:'goToPreviousPage'
+
 }
   
   export default events;

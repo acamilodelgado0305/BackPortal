@@ -28,7 +28,13 @@ const initWhiteboard = (io) => {
     whiteboardController.handleInitializeTextPosition(socket);
     whiteboardController.handleUpdateCurrentText(socket);
     whiteboardController.handleAddTextToList(socket);
-    
+    whiteboardController.handleToogleDrugMode(socket);
+    whiteboardController.handleClearWhieBoard(socket);
+    whiteboardController.handleUndoBoardState(socket);
+    whiteboardController.handleRedoBoardState(socket);
+    whiteboardController.handleGoToNextPage(socket);
+    whiteboardController.handleGoToPreviousPage(socket);
+
   });
 };
 

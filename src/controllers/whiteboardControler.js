@@ -115,3 +115,39 @@ export const handleAddTextToList = (socket) =>{
     socket.to(socket.room).emit(events.TEXT_ADDED); 
   })
 }
+
+export const handleToogleDrugMode = (socket) =>{
+  socket.on(events.TOOGLE_DRUG_MODE, ()=>{
+    socket.to(socket.room).emit(events.TOOGLE_DRUG_MODE); 
+  })
+}
+
+export const handleClearWhieBoard = (socket) => {
+  socket.on(events.CLEAR_WHITEBOARD, ()=> {
+    socket.to(socket.room).emit(events.CLEAR_WHITEBOARD); 
+  })
+}
+
+export const handleUndoBoardState = (socket)=>{
+  socket.on(events.UNDO_BOARD_STATE, ()=>{
+    socket.to(socket.room).emit(events.UNDO_BOARD_STATE); 
+  })
+} 
+
+export const handleRedoBoardState = (socket)=>{
+  socket.on(events.REDO_BOARD_STATE, ()=>{
+    socket.to(socket.room).emit(events.REDO_BOARD_STATE); 
+  })
+} 
+
+export const handleGoToNextPage = (socket) => {
+  socket.on(events.GO_TO_NEXT_PAGE, ()=>{
+    socket.to(socket.room).emit(events.GO_TO_NEXT_PAGE); 
+  })
+}
+
+export const handleGoToPreviousPage = (socket) => {
+  socket.on(events.GO_TO_PREVIOUS_PAGE, ()=>{
+    socket.to(socket.room).emit(events.GO_TO_PREVIOUS_PAGE); 
+  })
+}
