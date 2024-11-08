@@ -24,7 +24,7 @@ const events = {
     REDO_BOARD_STATE:'redoBoardState',
     GO_TO_NEXT_PAGE:'goToNextPage',
     GO_TO_PREVIOUS_PAGE:'goToPreviousPage',
-    TOGGLE_ZOOM_MODE: 'toggleZoomMode', //
+    TOGGLE_ZOOM_MODE: 'toggleZoomMode', 
     ZOOM_ON_POSITION:'zoomOnPosition'
 
 
