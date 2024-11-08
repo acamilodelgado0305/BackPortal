@@ -34,6 +34,8 @@ const initWhiteboard = (io) => {
     whiteboardController.handleRedoBoardState(socket);
     whiteboardController.handleGoToNextPage(socket);
     whiteboardController.handleGoToPreviousPage(socket);
+    whiteboardController.handleToggleZoomMode(socket);
+    whiteboardController.handleZoomOnPosition(socket);
 
   });
 };

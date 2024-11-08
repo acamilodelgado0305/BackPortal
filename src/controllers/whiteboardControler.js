@@ -151,3 +151,15 @@ export const handleGoToPreviousPage = (socket) => {
     socket.to(socket.room).emit(events.GO_TO_PREVIOUS_PAGE); 
   })
 }
+
+export const handleToggleZoomMode = (socket) =>{
+  socket.on(events.TOGGLE_ZOOM_MODE, ()=>{
+    socket.to(socket.room).emit(events.TOGGLE_ZOOM_MODE); 
+  })
+}
+
+export const handleZoomOnPosition = (socket) => {
+  socket.on(events.ZOOM_ON_POSITION, (data)=>{
+    socket.to(socket.room).emit(events.ZOOM_ON_POSITION, data); 
+  })
+}
