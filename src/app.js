@@ -18,7 +18,7 @@ setupWebSocket(server); // Configura WebSocket
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://a.app.esturio.com/"],
+     origin: ["https://a.app.esturio.com","http://localhost:5173" ],
   })
 );
 app.use(express.json());

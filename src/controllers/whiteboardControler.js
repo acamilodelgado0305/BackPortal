@@ -72,8 +72,8 @@ export const handleMouseDown = (socket) =>{
 }
 
 export const handleToggleDrawingMode = (socket) => {
-  socket.on(events.TOGGLE_DRAWING_MODE, ()=>{
-    socket.to(socket.room).emit(events.TOGGLE_DRAWING_MODE);   
+  socket.on(events.TOGGLE_DRAWING_MODE, (payload)=>{
+    socket.to(socket.room).emit(events.TOGGLE_DRAWING_MODE, payload);   
     })
   
 }
