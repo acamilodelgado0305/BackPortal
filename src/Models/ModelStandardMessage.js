@@ -1,119 +1,148 @@
 import { standardMessagesTable, db } from '../awsconfig/database.js';
-import { PutCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, GetCommand, QueryCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 
-export const createStanderdMessage = async (data) => {
-    const timestamp = new Date().toISOString();
-    const standardMessageId = uuidv4();
-    const chatId = data.chatId ? data.chatId : uuidv4();
+// Función para verificar si ya existe un chat entre dos usuarios
+const getExistingChatId = async (senderUserId, recipientUserId) => {
+  const params = {
+    TableName: standardMessagesTable,
+    IndexName: 'SenderRecipientIndex', // Asegurarse de que tenga un índice GSI en la tabla que permita buscar por sender y recipient.
+    KeyConditionExpression: 'senderUserId = :senderUserId AND recipientUserId = :recipientUserId',
+    ExpressionAttributeValues: {
+      ':senderUserId': senderUserId,
+      ':recipientUserId': recipientUserId,
+    },
+  };
 
-    const params = {
-        TableName: standardMessagesTable,
-        Item: {  
-            id: standardMessageId,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-            senderUserId: data.userId, 
-            recipientUserId: data.touserId,
-            chatId,
-            messageContent: data.message 
-        }
-    };
-
-    try {
-        await db.send(new PutCommand(params));
-        return { success: true, id: standardMessageId };
-    } catch (error) {
-        console.error('Error creating standardMessage:', error.message);
-        return { success: false, message: 'Error creating standardMessage', error: error.message };
+  try {
+    const { Items = [] } = await db.send(new QueryCommand(params));
+    if (Items.length > 0) {
+      return Items[0].chatId;
     }
+    return null; 
+  } catch (error) {
+    console.error('Error fetching existing chat:', error.message);
+    throw new Error('Error fetching existing chat');
+  }
 };
 
-export const getStanderdMessagesByChatId = async (chatId) => {
+export const createStandardMessage = async (data) => {
+  const timestamp = new Date().toISOString();
+  const standardMessageId = uuidv4();
+
+  try {
+    let chatId = null // await getExistingChatId(data.userId, data.touserId);
+    
+    if (!chatId) {
+      chatId = uuidv4();
+    }
+
     const params = {
-        TableName: standardMessagesTable,
-        IndexName: 'ChatIdIndex', 
-        KeyConditionExpression: 'chatId = :chatId',
-        ExpressionAttributeValues: {
-            ':chatId': chatId
-        }
+      TableName: standardMessagesTable,
+      Item: {
+        id: standardMessageId,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        senderUserId: data.userId,
+        recipientUserId: data.touserId,
+        chatId,
+        messageContent: data.message,
+      },
     };
 
-    try {
-        const { Items = [] } = await db.send(new GetCommand(params));
-        if (Items.length === 0) {
-            return { success: false, message: 'No messages found for this chatId', data: [] };
-        }
-        return { success: true, data: Items };
-    } catch (error) {
-        console.error(`Error fetching messages by chatId ${chatId}:`, error.message);
-        return { success: false, message: 'Error fetching messages by chatId', error: error.message, data: [] };
-    }
+    await db.send(new PutCommand(params));
+    return { success: true, id: standardMessageId, chatId };
+  } catch (error) {
+    console.error('Error creating standardMessage:', error.message);
+    return { success: false, message: 'Error creating standardMessage', error: error.message };
+  }
 };
 
-export const updateStanderdMessage = async (id, data = {}) => {
-    const timestamp = new Date().toISOString();
+export const getStandardMessagesByChatId = async (chatId) => {
+  const params = {
+    TableName: standardMessagesTable,
+    IndexName: 'ChatIdIndex', 
+    KeyConditionExpression: 'chatId = :chatId',
+    ExpressionAttributeValues: {
+      ':chatId': chatId,
+    },
+  };
 
-    const existingMessageResponse = await getStanderdMessageById(id);
-
-    if (!existingMessageResponse.success) {
-        return { success: false, message: 'StandardMessage not found, cannot update' };
+  try {
+    const { Items = [] } = await db.send(new QueryCommand(params));
+    if (Items.length === 0) {
+      return { success: false, message: 'No messages found for this chatId', data: [] };
     }
-
-    const existingMessage = existingMessageResponse.data;
-
-    const params = {
-        TableName: standardMessagesTable,
-        Item: {
-            ...existingMessage,  
-            ...data,             
-            id: id,             
-            updatedAt: timestamp
-        }
-    };
-
-    try {
-        await db.send(new PutCommand(params));
-        return { success: true, id: id };
-    } catch (error) {
-        console.error('Error updating StanderdMessage:', error.message);
-        return { success: false, message: 'Error updating StanderdMessage', error: error.message };
-    }
+    return { success: true, data: Items };
+  } catch (error) {
+    console.error(`Error fetching messages by chatId ${chatId}:`, error.message);
+    return { success: false, message: 'Error fetching messages by chatId', error: error.message, data: [] };
+  }
 };
 
-export const getStanderdMessageById = async (value, key = 'id') => {
-    const params = {
-        TableName: standardMessagesTable,
-        Key: {
-            [key]: value
-        }
-    };
+export const updateStandardMessage = async (id, data = {}) => {
+  const timestamp = new Date().toISOString();
 
-    try {
-        const { Item = {} } = await db.send(new GetCommand(params));
-        if (Object.keys(Item).length === 0) {
-            return { success: false, message: 'StandardMessage not found', data: null };
-        }
-        return { success: true, data: Item };
-    } catch (error) {
-        console.error(`Error reading StandardMessage with ${key} = ${value}:`, error.message);
-        return { success: false, message: `Error reading StandardMessage with ${key} = ${value}`, error: error.message, data: null };
-    }
+  const existingMessageResponse = await getStandardMessageById(id);
+
+  if (!existingMessageResponse.success) {
+    return { success: false, message: 'StandardMessage not found, cannot update' };
+  }
+
+  const existingMessage = existingMessageResponse.data;
+
+  const params = {
+    TableName: standardMessagesTable,
+    Item: {
+      ...existingMessage,
+      ...data,
+      id: id,
+      updatedAt: timestamp,
+    },
+  };
+
+  try {
+    await db.send(new PutCommand(params));
+    return { success: true, id: id };
+  } catch (error) {
+    console.error('Error updating StandardMessage:', error.message);
+    return { success: false, message: 'Error updating StandardMessage', error: error.message };
+  }
 };
 
-export const deleteStanderdMessageById = async (id) => {
-    const params = {
-        TableName: standardMessagesTable,
-        Key: {
-            id: id
-        }
-    };
+export const getStandardMessageById = async (value, key = 'id') => {
+  const params = {
+    TableName: standardMessagesTable,
+    Key: {
+      [key]: value,
+    },
+  };
 
-    try {
-        await db.send(new DeleteCommand(params));
-        return { success: true, message: `StandardMessage with id ${id} deleted successfully` };
-    } catch (error) {
-        console.error(`Error deleting StandardMessage with id ${id}:`, error.message);
-        return { success: false, message: `Error deleting StandardMessage with id ${id}`, error: error.message };
+  try {
+    const { Item = {} } = await db.send(new GetCommand(params));
+    if (Object.keys(Item).length === 0) {
+      return { success: false, message: 'StandardMessage not found', data: null };
     }
+    return { success: true, data: Item };
+  } catch (error) {
+    console.error(`Error reading StandardMessage with ${key} = ${value}:`, error.message);
+    return { success: false, message: `Error reading StandardMessage with ${key} = ${value}`, error: error.message, data: null };
+  }
+};
+
+export const deleteStandardMessageById = async (id) => {
+  const params = {
+    TableName: standardMessagesTable,
+    Key: {
+      id: id,
+    },
+  };
+
+  try {
+    await db.send(new DeleteCommand(params));
+    return { success: true, message: `StandardMessage with id ${id} deleted successfully` };
+  } catch (error) {
+    console.error(`Error deleting StandardMessage with id ${id}:`, error.message);
+    return { success: false, message: `Error deleting StandardMessage with id ${id}`, error: error.message };
+  }
 };

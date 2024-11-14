@@ -2,7 +2,7 @@ import * as StandardMessage from '../Models/ModelStandardMessage.js';
 
 export const createStandardMessage = async (req, res) =>{
     const data = req.body;
-    const result =  await StandardMessage.createStanderdMessage(data);
+    const result =  await StandardMessage.createStandardMessage(data);
     if(result.success){
         return res.status(201).json({success: true, id: result.id});
     }
@@ -11,7 +11,7 @@ export const createStandardMessage = async (req, res) =>{
 
 export const getStandardMessageById = async(req, res) => {
     const { id } = req.params;
-    const result = StandardMessage.getStanderdMessageById(id);
+    const result = StandardMessage.getStandardMessageById(id);
     if(result.success){
         return res.status(201).json({ success: true, data: result.data });
     }
@@ -21,7 +21,7 @@ export const getStandardMessageById = async(req, res) => {
 
 export const deleteStandardMessageById = async(req, res) =>{
     const { id } = req.params;
-    const result = await StandardMessage.deleteStanderdMessageById(id);
+    const result = await StandardMessage.deleteStandardMessageById(id);
 
     if(result.success){
         return res.json({success: true, message:result.message});
@@ -32,7 +32,7 @@ export const deleteStandardMessageById = async(req, res) =>{
 export const updateStandardMessage = async (req, res) => {
     const { id } = req.params;
     const data = req.body;
-    const result = await StandardMessage.updateStanderdMessage(id, data);
+    const result = await StandardMessage.updateStandardMessage(id, data);
   
    if(result.success){
     return res.json({success:true, id});
@@ -43,7 +43,7 @@ export const updateStandardMessage = async (req, res) => {
 
 export const getStandardMessagesByChatId = async (req, res) =>{
     const { chatId } = req.params;
-    const result = await StandardMessage.getStanderdMessagesByChatId(chatId);
+    const result = await StandardMessage.getStandardMessagesByChatId(chatId);
 
     if(result.success){
         return res.json({success:true, data: result.data});
