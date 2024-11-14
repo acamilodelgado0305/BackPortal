@@ -6,6 +6,7 @@ let db;
 const Table = "teacher_portal";
 const UserTable = "users-Esturio"
 const studentTable = "student_portal";
+const standardMessagesTable = 'standard-Messages-esturio'
 dotenv.config()
 
 try {
@@ -36,5 +37,6 @@ export {
   db,
   UserTable,
   Table,
-  studentTable
+  studentTable,
+  standardMessagesTable
 };
