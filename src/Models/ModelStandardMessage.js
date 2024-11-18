@@ -2,11 +2,10 @@ import { standardMessagesTable, db } from '../awsconfig/database.js';
 import { PutCommand, GetCommand, QueryCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 
-// Función para verificar si ya existe un chat entre dos usuarios
 const getExistingChatId = async (senderUserId, recipientUserId) => {
   const params = {
     TableName: standardMessagesTable,
-    IndexName: 'SenderRecipientIndex', // Asegurarse de que tenga un índice GSI en la tabla que permita buscar por sender y recipient.
+    IndexName: 'SenderRecipientIndex', 
     KeyConditionExpression: 'senderUserId = :senderUserId AND recipientUserId = :recipientUserId',
     ExpressionAttributeValues: {
       ':senderUserId': senderUserId,
@@ -58,6 +57,58 @@ export const createStandardMessage = async (data) => {
     return { success: false, message: 'Error creating standardMessage', error: error.message };
   }
 };
+
+export const getMessagesForUser = async (userId) => {
+  const paramsRecipient = {
+    TableName: standardMessagesTable,
+    IndexName: 'RecipientUserIdIndex', // Índice para recipientUserId
+    KeyConditionExpression: 'recipientUserId = :userId',
+    ExpressionAttributeValues: {
+      ':userId': userId,
+    },
+  };
+
+  const paramsSender = {
+    TableName: standardMessagesTable,
+    IndexName: 'SenderRecipientIndex', // Índice para senderUserId
+    KeyConditionExpression: 'senderUserId = :userId',
+    ExpressionAttributeValues: {
+      ':userId': userId,
+    },
+  };
+
+  try {
+    const { Items: itemsRecipient = [] } = await db.send(new QueryCommand(paramsRecipient));
+    const { Items: itemsSender = [] } = await db.send(new QueryCommand(paramsSender));
+
+    // Combinamos los resultados de ambas consultas
+    const allItems = [...itemsRecipient, ...itemsSender];
+
+    // Agrupar mensajes por chatId
+    const groupedMessages = allItems.reduce((acc, item) => {
+      if (!acc[item.chatId]) {
+        acc[item.chatId] = [];
+      }
+      acc[item.chatId].push(item);
+      return acc;
+    }, {});
+
+    // Ordenar los mensajes dentro de cada grupo (por ejemplo, por fecha)
+    for (const chatId in groupedMessages) {
+      groupedMessages[chatId].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Ajusta la fecha según el campo de tu mensaje
+    }
+
+    // Devuelvo los datos con los chatIds y sus mensajes correspondientes
+    return { success: true, data: groupedMessages };
+  } catch (error) {
+    console.error(`Error fetching messages for user ${userId}:`, error.message);
+    return { success: false, message: 'Error fetching messages by userId', error: error.message };
+  }
+};
+
+
+
+
 
 export const getStandardMessagesByChatId = async (chatId) => {
   const params = {

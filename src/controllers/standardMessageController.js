@@ -51,6 +51,16 @@ export const updateStandardMessage = async (req, res) => {
 
 }
 
+export const getStandardsMessagesChatsByUserId =  async (req, res) =>{
+    const { userId } = req.params;
+    const result = await StandardMessage.getMessagesForUser(userId);
+
+    if(result.success){
+        return res.json({success:true, data: result.data});
+    }
+    return res.status(404).json({success: false, message: result.message});
+}
+
 export const getStandardMessagesByChatId = async (req, res) =>{
     const { chatId } = req.params;
     const result = await StandardMessage.getStandardMessagesByChatId(chatId);
@@ -60,3 +70,4 @@ export const getStandardMessagesByChatId = async (req, res) =>{
     }
     return res.status(404).json({success: false, message: result.message});
 }
+
