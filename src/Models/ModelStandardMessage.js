@@ -61,7 +61,7 @@ export const createStandardMessage = async (data) => {
 export const getMessagesForUser = async (userId) => {
   const paramsRecipient = {
     TableName: standardMessagesTable,
-    IndexName: 'RecipientUserIdIndex', // Índice para recipientUserId
+    IndexName: 'RecipientUserIdIndex', 
     KeyConditionExpression: 'recipientUserId = :userId',
     ExpressionAttributeValues: {
       ':userId': userId,
@@ -70,7 +70,7 @@ export const getMessagesForUser = async (userId) => {
 
   const paramsSender = {
     TableName: standardMessagesTable,
-    IndexName: 'SenderRecipientIndex', // Índice para senderUserId
+    IndexName: 'SenderRecipientIndex', 
     KeyConditionExpression: 'senderUserId = :userId',
     ExpressionAttributeValues: {
       ':userId': userId,
@@ -81,30 +81,31 @@ export const getMessagesForUser = async (userId) => {
     const { Items: itemsRecipient = [] } = await db.send(new QueryCommand(paramsRecipient));
     const { Items: itemsSender = [] } = await db.send(new QueryCommand(paramsSender));
 
-    // Combinamos los resultados de ambas consultas
     const allItems = [...itemsRecipient, ...itemsSender];
 
-    // Agrupar mensajes por chatId
     const groupedMessages = allItems.reduce((acc, item) => {
       if (!acc[item.chatId]) {
-        acc[item.chatId] = [];
+        acc[item.chatId] = {
+          messages: [],
+          me: userId,
+          otherUser: item.senderUserId === userId ? item.recipientUserId : item.senderUserId,
+        };
       }
-      acc[item.chatId].push(item);
+      acc[item.chatId].messages.push(item);
       return acc;
     }, {});
 
-    // Ordenar los mensajes dentro de cada grupo (por ejemplo, por fecha)
     for (const chatId in groupedMessages) {
-      groupedMessages[chatId].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Ajusta la fecha según el campo de tu mensaje
+      groupedMessages[chatId].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     }
 
-    // Devuelvo los datos con los chatIds y sus mensajes correspondientes
     return { success: true, data: groupedMessages };
   } catch (error) {
     console.error(`Error fetching messages for user ${userId}:`, error.message);
     return { success: false, message: 'Error fetching messages by userId', error: error.message };
   }
 };
+
 
 
 
