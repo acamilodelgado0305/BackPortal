@@ -29,6 +29,16 @@ export const deleteStandardMessageById = async(req, res) =>{
     return res.status(404).json({success: false, message: result.message });
 }
 
+export const deleteStandardMessagesByChatId = async(req, res) =>{
+    const { chatId } = req.params;
+    const result = await StandardMessage.deleteStandardMessagesByChatId(chatId);
+
+    if(result.success){
+        return res.json({success: true, message:result.message});
+    }
+    return res.status(404).json({success: false, message: result.message });
+}
+
 export const updateStandardMessage = async (req, res) => {
     const { id } = req.params;
     const data = req.body;

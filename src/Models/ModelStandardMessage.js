@@ -31,7 +31,7 @@ export const createStandardMessage = async (data) => {
   const standardMessageId = uuidv4();
 
   try {
-    let chatId = null // await getExistingChatId(data.userId, data.touserId);
+    let chatId =  await getExistingChatId(data.userId, data.touserId);
     
     if (!chatId) {
       chatId = uuidv4();
@@ -47,6 +47,7 @@ export const createStandardMessage = async (data) => {
         recipientUserId: data.touserId,
         chatId,
         messageContent: data.message,
+        isRead:false
       },
     };
 
@@ -130,6 +131,7 @@ export const getStandardMessageById = async (value, key = 'id') => {
   }
 };
 
+
 export const deleteStandardMessageById = async (id) => {
   const params = {
     TableName: standardMessagesTable,
@@ -146,3 +148,41 @@ export const deleteStandardMessageById = async (id) => {
     return { success: false, message: `Error deleting StandardMessage with id ${id}`, error: error.message };
   }
 };
+
+
+export const deleteStandardMessagesByChatId = async (chatId) => {
+  const params = {
+    TableName: standardMessagesTable,
+    IndexName: 'ChatIdIndex', 
+    KeyConditionExpression: 'chatId = :chatId',
+    ExpressionAttributeValues: {
+      ':chatId': chatId,
+    },
+  };
+
+  try {
+    const { Items = [] } = await db.send(new QueryCommand(params));
+
+    if (Items.length === 0) {
+      return { success: false, message: `No messages found for chatId ${chatId}` };
+    }
+
+    const deletePromises = Items.map((message) => {
+      const deleteParams = {
+        TableName: standardMessagesTable,
+        Key: {
+          id: message.id,
+        },
+      };
+      return db.send(new DeleteCommand(deleteParams));
+    });
+
+    await Promise.all(deletePromises);
+
+    return { success: true, message: `All messages for chatId ${chatId} deleted successfully` };
+  } catch (error) {
+    console.error(`Error deleting messages for chatId ${chatId}:`, error.message);
+    return { success: false, message: `Error deleting messages for chatId ${chatId}`, error: error.message };
+  }
+};
+
