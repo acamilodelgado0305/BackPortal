@@ -83,28 +83,13 @@ export const getMessagesForUser = async (userId) => {
 
     const allItems = [...itemsRecipient, ...itemsSender];
 
-    const groupedMessages = allItems.reduce((acc, item) => {
-      if (!acc[item.chatId]) {
-        acc[item.chatId] = {
-          messages: [],
-          me: userId,
-          otherUser: item.senderUserId === userId ? item.recipientUserId : item.senderUserId,
-        };
-      }
-      acc[item.chatId].messages.push(item);
-      return acc;
-    }, {});
-
-    for (const chatId in groupedMessages) {
-      groupedMessages[chatId].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    }
-
-    return { success: true, data: groupedMessages };
+    return { success: true, data: allItems }; 
   } catch (error) {
     console.error(`Error fetching messages for user ${userId}:`, error.message);
     return { success: false, message: 'Error fetching messages by userId', error: error.message };
   }
 };
+
 
 
 

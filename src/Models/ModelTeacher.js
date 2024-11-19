@@ -15,15 +15,15 @@ const createTeacher = async (data = {}) => {
   if (isEmailTaken) {
     return { success: false, message: 'Email is already registered.' };
   }
-
- const userId = uuidv4();
+ 
+  const cognitoId =  uuidv4();
 
  const params = {
    TableName: Table,
    Item: {
      ...dataWithoutPassword,  
      id: teacherId, 
-     userId:userId,
+     cognitoId:cognitoId,
      createdAt: timestamp,
      updatedAt: timestamp,
      status: false 
@@ -33,7 +33,7 @@ const createTeacher = async (data = {}) => {
   const userParams = {
     TableName: UserTable,
     Item: {
-      id: userId,
+      id: cognitoId,
       teacherId: teacherId,
       email: data.email,
       password: data.password,
