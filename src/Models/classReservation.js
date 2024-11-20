@@ -122,6 +122,30 @@ const getClassReservationById = async (value, key = 'id') => {
   }
 };
 
+ // leer clase de estudiante
+ const getClassReservationCurrentByIdStudent = async (studentId, teacherId) => {
+  const params = {
+    TableName: 'class_reservations',
+    IndexName: 'studentId-index', // Índice basado solo en studentId
+    KeyConditionExpression: 'studentId = :studentId',
+    FilterExpression: 'teacherId = :teacherId',
+    ExpressionAttributeValues: {
+      ':studentId': studentId,
+      ':teacherId': teacherId,
+    },
+  };
+  try {
+    const { Items = [] } = await db.send(new QueryCommand(params));
+    if (Items.length === 0) {
+      return { success: false, message: 'No class reservations found for the studentId', data: null };
+    }
+    return { success: true, data: Items };
+  } catch (error) {
+    console.error(`Error reading class reservation with studentId = ${studentId}:`, error.message);
+    return { success: false, message: `Error reading class reservation with studentId = ${studentId}`, error: error.message, data: null };
+  }
+};
+
 
 // Eliminar Student por ID
 const deleteClassReservationById = async (value, key = 'id') => {
@@ -147,5 +171,6 @@ export {
   readAllReservationClass,
   getClassReservationById,
   deleteClassReservationById,
-  getClassReservationCurrentById
+  getClassReservationCurrentById,
+  getClassReservationCurrentByIdStudent
 };
