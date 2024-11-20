@@ -1,7 +1,5 @@
 import * as StandardMessage from '../Models/ModelStandardMessage.js';
-import * as User from '../Models/ModelUser.js';
-import * as Teacher from '../Models/ModelTeacher.js';
-import * as Student from '../Models/modelStudent.js';
+import { getUserComplete } from '../helpers/getuserComplete.js';
 
 
 export const createStandardMessage = async (req, res) =>{
@@ -61,7 +59,7 @@ export const getStandardsMessagesChatsByUserId = async (req, res) => {
 
   try {
     const result = await StandardMessage.getMessagesForUser(userId);
-
+  
     if (!result.success) {
       return res.status(404).json({ success: false, message: result.message });
     }
@@ -73,22 +71,14 @@ export const getStandardsMessagesChatsByUserId = async (req, res) => {
 
     for (const item of allItems) {
       const chatKey = item.chatId;
-
       if (!chatMap.has(chatKey)) {
         const otherUserId = item.senderUserId === userId ? item.recipientUserId : item.senderUserId;
-
-        const otherUserCognito = await User.getUserById(otherUserId);
-        let otherUser; 
-        console.log('role '+JSON.stringify(otherUserCognito.data.role));
-        if(otherUserCognito.data.role == "teacher"){
-            console.log(otherUserCognito.data.teacherId)
-            otherUser = await Teacher.getTeacherById(otherUserCognito.data.teacherId);
-        } else {
-            console.log(otherUserCognito.data.studentId)
-            otherUser = await Student.getStudentById(otherUserCognito.data.studentId);
+        let otherUser = null;
+        try {
+          otherUser = await getUserComplete(otherUserId);
+        }catch(error) {
+          console.log('EEEEEEEEEEEEEEEEEEEEEEEERRROR'+error)
         }
-
-
         chatMap.set(chatKey, chatIndex);
         groupedMessages.push({
           chatIndex,

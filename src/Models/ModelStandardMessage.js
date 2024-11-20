@@ -29,13 +29,14 @@ export const createStandardMessage = async (data) => {
   const timestamp = new Date().toISOString();
   const standardMessageId = uuidv4();
 
-  try {
-    let chatId =  await getExistingChatId(data.userId, data.touserId);
-    
-    if (!chatId) {
-      chatId = uuidv4();
-    }
+  console.log(JSON.stringify(data))
 
+  try {
+ 
+    let chatId =  await getExistingChatId(data.userId, data.touserId);
+    if (!chatId) 
+      chatId = uuidv4();   
+    console.log('GOOOD'+data?.chatId)
     const params = {
       TableName: standardMessagesTable,
       Item: {
@@ -44,7 +45,7 @@ export const createStandardMessage = async (data) => {
         updatedAt: timestamp,
         senderUserId: data.userId,
         recipientUserId: data.touserId,
-        chatId,
+        chatId:data?.chatId ? data?.chatId : chatId,
         messageContent: data.message,
         isRead:false
       },
