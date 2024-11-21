@@ -1,6 +1,8 @@
 import { standardMessagesTable, db } from '../awsconfig/database.js';
 import { PutCommand, GetCommand, QueryCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+
 import { v4 as uuidv4 } from 'uuid';
+
 
 const getExistingChatId = async (senderUserId, recipientUserId) => {
   const params = {
@@ -29,14 +31,11 @@ export const createStandardMessage = async (data) => {
   const timestamp = new Date().toISOString();
   const standardMessageId = uuidv4();
 
-  console.log(JSON.stringify(data))
-
   try {
  
     let chatId =  await getExistingChatId(data.userId, data.touserId);
     if (!chatId) 
       chatId = uuidv4();   
-    console.log('GOOOD'+data?.chatId)
     const params = {
       TableName: standardMessagesTable,
       Item: {

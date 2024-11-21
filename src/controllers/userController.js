@@ -57,7 +57,6 @@ export const loginUserHandler = async (req, res) => {
     }
 };
 
-// Leer todos los Usuarios
 export const readAllUsersHandler = async (req, res) => {
     const result = await User.readAllUsers();
 
@@ -67,7 +66,7 @@ export const readAllUsersHandler = async (req, res) => {
     return res.status(500).json({ success: false, message: result.message });
 };
 
-// Leer Usuario por ID
+
 export const getUserByIdHandler = async (req, res) => {
     const { id } = req.params;
     const result = await User.getUserById(id);
@@ -78,7 +77,6 @@ export const getUserByIdHandler = async (req, res) => {
     return res.status(404).json({ success: false, message: result.message });
 };
 
-// Eliminar Usuario por ID
 export const deleteUserByIdHandler = async (req, res) => {
     const { id } = req.params;
     const result = await User.deleteUserById(id);
@@ -89,7 +87,6 @@ export const deleteUserByIdHandler = async (req, res) => {
     return res.status(404).json({ success: false, message: result.message });
 };
 
-// Actualizar Usuario
 export const updateUserHandler = async (req, res) => {
     const { id } = req.params;
     const userData = req.body;
@@ -101,8 +98,7 @@ export const updateUserHandler = async (req, res) => {
     return res.status(404).json({ success: false, message: result.message });
 };
 
-// Reenviar código de verificación
-// En tu controller.js
+
 
 
 

@@ -77,7 +77,7 @@ export const getStandardsMessagesChatsByUserId = async (req, res) => {
         try {
           otherUser = await getUserComplete(otherUserId);
         }catch(error) {
-          console.log('EEEEEEEEEEEEEEEEEEEEEEEERRROR'+error)
+          console.log('Other user'+JSON.stringify(otherUser));
         }
         chatMap.set(chatKey, chatIndex);
         groupedMessages.push({

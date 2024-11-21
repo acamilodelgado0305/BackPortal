@@ -7,13 +7,17 @@ export const getUserComplete = async(id) => {
     const otherUserCognito = await User.getUserById(id);
     let otherUser; 
 
-    if(otherUserCognito.data.role == "teacher"){
+    if(otherUserCognito?.data?.role == "teacher"){
      return  otherUser = await Teacher.getTeacherById(otherUserCognito.data.teacherId);
-    } else if (otherUserCognito.data.role == "student"){
+    } else if (otherUserCognito?.data?.role == "student"){
       return  otherUser = await Student.getStudentById(otherUserCognito.data.studentId);
     } else {
-      console.log('Este es el usuario que estoy devolviendo')
-      return  otherUserCognito
+      const isTeacher = await Teacher.teacherExists(id)
+      if(isTeacher){
+        return Teacher.getTeacherById(id)
+      }else{
+        return  otherUser = await Student.getStudentById(id);
+      }
     }
 
 }

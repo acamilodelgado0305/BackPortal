@@ -2,6 +2,7 @@ import { Table, UserTable, db } from '../awsconfig/database.js';
 import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import { emailExists } from '../helpers/IsEmailExist.js';
+import { cognitoService } from  '../awsconfig/cognitoUtils.js';
 
 
 // Crear Teacher
@@ -41,8 +42,10 @@ const createTeacher = async (data = {}) => {
       createdAt: timestamp,
       updatedAt: timestamp,
     }
-
   };
+
+  const cognitoResult = await cognitoService.signUp(data.email, data.password);
+
   try {
     await db.send(new PutCommand(params));
     await db.send(new PutCommand(userParams));
@@ -136,10 +139,16 @@ const deleteTeacherById = async (value, key = 'id') => {
   }
 };
 
+const teacherExists = async (id) => {
+  const result = await getTeacherById(id);
+  return result.success;
+};
+
 export {
   createTeacher,
   updateTeacher,
   readAllTeachers,
   getTeacherById,
-  deleteTeacherById
+  deleteTeacherById,
+  teacherExists
 };
