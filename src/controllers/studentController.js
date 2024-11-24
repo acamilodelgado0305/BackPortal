@@ -4,7 +4,7 @@ export const createstudentHandler = async (req, res) => {
     const studentData = req.body;
 
     const result = await student.createStudent(studentData);
-  
+
     if (result.success) {
         return res.status(201).json({ success: true, id: result.id });
     }
@@ -13,7 +13,7 @@ export const createstudentHandler = async (req, res) => {
 
 export const readAllstudentsHandler = async (req, res) => {
     const result = await student.readAllStudents();
-  
+
     if (result.success) {
         return res.json({ success: true, data: result.data });
     }
@@ -23,7 +23,7 @@ export const readAllstudentsHandler = async (req, res) => {
 export const getstudentByIdHandler = async (req, res) => {
     const { id } = req.params;
     const result = await student.getStudentById(id);
-  
+
     if (result.success) {
         return res.json({ success: true, data: result.data });
     }
@@ -33,18 +33,19 @@ export const getstudentByIdHandler = async (req, res) => {
 export const deletestudentByIdHandler = async (req, res) => {
     const { id } = req.params;
     const result = await student.deleteStudentById(id);
-  
+
     if (result.success) {
         return res.json({ success: true, message: result.message });
     }
     return res.status(404).json({ success: false, message: result.message });
 };
 
+
 export const updatestudentHandler = async (req, res) => {
     const { id } = req.params;
     const studentData = req.body;
     const result = await student.updateStudent(id, studentData);
-  
+
     if (result.success) {
         return res.json({ success: true, id });
     }
