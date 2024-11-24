@@ -2,6 +2,7 @@ import { Table, UserTable, db } from '../awsconfig/database.js';
 import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import { emailExists } from '../helpers/IsEmailExist.js';
+import { cognitoService } from  '../awsconfig/cognitoUtils.js';
 
 
 // Crear Teacher
@@ -15,12 +16,15 @@ const createTeacher = async (data = {}) => {
   if (isEmailTaken) {
     return { success: false, message: 'Email is already registered.' };
   }
+ 
+  const cognitoId =  uuidv4();
 
  const params = {
    TableName: Table,
    Item: {
      ...dataWithoutPassword,  
      id: teacherId, 
+     cognitoId:cognitoId,
      createdAt: timestamp,
      updatedAt: timestamp,
      status: false 
@@ -30,7 +34,7 @@ const createTeacher = async (data = {}) => {
   const userParams = {
     TableName: UserTable,
     Item: {
-      id: uuidv4(),
+      id: cognitoId,
       teacherId: teacherId,
       email: data.email,
       password: data.password,
@@ -38,8 +42,10 @@ const createTeacher = async (data = {}) => {
       createdAt: timestamp,
       updatedAt: timestamp,
     }
-
   };
+
+  const cognitoResult = await cognitoService.signUp(data.email, data.password);
+
   try {
     await db.send(new PutCommand(params));
     await db.send(new PutCommand(userParams));
@@ -133,10 +139,16 @@ const deleteTeacherById = async (value, key = 'id') => {
   }
 };
 
+const teacherExists = async (id) => {
+  const result = await getTeacherById(id);
+  return result.success;
+};
+
 export {
   createTeacher,
   updateTeacher,
   readAllTeachers,
   getTeacherById,
-  deleteTeacherById
+  deleteTeacherById,
+  teacherExists
 };

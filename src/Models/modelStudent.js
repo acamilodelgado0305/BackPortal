@@ -24,7 +24,9 @@ const createStudent = async (data = {}) => {
 
   // Separar la contraseña para evitar que se almacene en la tabla de estudiantes
   const { password, ...studentData } = data;
-
+  
+  const cognitoId =  uuidv4();
+ 
   // Guardar el estudiante en la tabla de estudiantes (sin la contraseña)
   const studentParams = {
     TableName: studentTable,
@@ -32,6 +34,7 @@ const createStudent = async (data = {}) => {
       ...studentData,
       id: studentId,
       teacherId: data.teacherId,
+      cognitoId:cognitoId,
       createdAt: timestamp,
       updatedAt: timestamp
     }
@@ -45,7 +48,7 @@ const createStudent = async (data = {}) => {
     const userParams = {
       TableName: UserTable,
       Item: {
-        id: uuidv4(),
+        id: cognitoId,
         email: data.email,
         password: hashedPassword,
         role: 'student',
