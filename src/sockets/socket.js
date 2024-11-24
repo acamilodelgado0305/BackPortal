@@ -5,7 +5,7 @@ import { initWhiteboard, initChat } from "./index.js";
 const setupWebSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: [process.env.FRONT_DEV, process.env.FRONT_PROD],
+      origin: true,
       methods: ["GET", "POST"],
     }
   });
