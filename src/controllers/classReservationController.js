@@ -38,6 +38,15 @@ export const getClassReservationCurrentByIdHandler = async (req, res) => {
     }
     return res.status(404).json({ success: false, message: result.message });
 };
+export const getClassReservationCurrentByIdHandlerStudent = async (req, res) => {
+    const { id, teacherid} = req.params;
+    const result = await classReservations.getClassReservationCurrentByIdStudent(id, teacherid);
+  
+    if (result.success) {
+        return res.json({ success: true, data: result.data });
+    }
+    return res.status(404).json({ success: false, message: result.message });
+};
 
 export const deleteClassReservationByIdHandler = async (req, res) => {
     const { id } = req.params;
