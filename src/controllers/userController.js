@@ -34,7 +34,7 @@ export const loginUserHandler = async (req, res) => {
 
         // Obtener datos adicionales del usuario de DynamoDB
         const user = await User.getUserByEmail(email);
-        
+
 
         return res.status(200).json({
             success: true,
