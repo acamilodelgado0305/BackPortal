@@ -37,7 +37,6 @@ const createTeacher = async (data = {}) => {
       id: cognitoId,
       teacherId: teacherId,
       email: data.email,
-      password: data.password,
       role: 'teacher',
       createdAt: timestamp,
       updatedAt: timestamp,
