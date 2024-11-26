@@ -1,15 +1,15 @@
 import { Table, UserTable, db } from '../awsconfig/database.js';
 import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcrypt'; // Usar bcrypt para encriptar contraseñas
 import { emailExists } from '../helpers/IsEmailExist.js';
-import { cognitoService } from  '../awsconfig/cognitoUtils.js';
+import * as User from './ModelUser.js';
 
 
 // Crear Teacher
 const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
   const teacherId = uuidv4();  // Generar un UUID para un nuevo teacher
-
  const { password, ...dataWithoutPassword } = data;
 
  const isEmailTaken = await emailExists(data.email, UserTable);
@@ -31,29 +31,25 @@ const createTeacher = async (data = {}) => {
    }
  };
 
-  const userParams = {
-    TableName: UserTable,
-    Item: {
-      id: cognitoId,
-      teacherId: teacherId,
-      email: data.email,
-      password: data.password,
-      role: 'teacher',
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    }
-  };
+ const userData ={
+  email:data.email,
+  password,
+  role:'teacher'
+ }
 
-  const cognitoResult = await cognitoService.signUp(data.email, data.password);
+console.log('Esta es la password de Model TEacher '+userData.password)
+ /* const cognitoResult = await cognitoService.signUp(data.email, hashedPassword); */
 
   try {
     await db.send(new PutCommand(params));
-    await db.send(new PutCommand(userParams));
+    await User.createUser(userData);
     return { success: true, id: teacherId };
   } catch (error) {
     console.error('Error creating teacher:', error.message);
     return { success: false, message: 'Error creating teacher', error: error.message };
   }
+
+  
 };
 
 

@@ -76,6 +76,7 @@ export const getStandardsMessagesChatsByUserId = async (req, res) => {
         let otherUser = null;
         try {
           otherUser = await getUserComplete(otherUserId);
+          console.log('OTRO USUARIO '+JSON.stringify(otherUser))
         }catch(error) {
           console.log('Other user'+JSON.stringify(otherUser));
         }
