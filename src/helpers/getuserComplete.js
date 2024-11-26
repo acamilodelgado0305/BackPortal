@@ -14,7 +14,7 @@ export const getUserComplete = async(id) => {
     } else {
       const isTeacher = await Teacher.teacherExists(id)
       if(isTeacher){
-        return Teacher.getTeacherById(id)
+        return otherUser = await Teacher.getTeacherById(id)
       }else{
         return  otherUser = await Student.getStudentById(id);
       }
