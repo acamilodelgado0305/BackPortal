@@ -1,16 +1,10 @@
 import * as Teacher from '../Models/ModelTeacher.js';
-import bcrypt from 'bcrypt';
 import { Table } from '../awsconfig/database.js';
 import { emailExists } from '../helpers/IsEmailExist.js';
 
 export const createTeacherHandler = async (req, res) => {
     const teacherData = req.body;
     try {
-        if (teacherData.password) {
-            const salt = await bcrypt.genSalt(10);
-            teacherData.password = await bcrypt.hash(teacherData.password, salt);
-        }
-
         const result = await Teacher.createTeacher(teacherData);
 
         if (result.success) {

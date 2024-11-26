@@ -39,7 +39,7 @@ export const cognitoService = {
   signUp: async (email, password) => {
     validateEmail(email);
     validatePassword(password);
-
+console.log('Esta es la password que llega aqui ' + password)
     const username = uuidv4();
     const command = new SignUpCommand({
       ClientId: COGNITO_CLIENT_ID,
