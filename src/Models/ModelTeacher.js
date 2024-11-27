@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt'; // Usar bcrypt para encriptar contraseñas
 import { emailExists } from '../helpers/IsEmailExist.js';
 import * as User from './ModelUser.js';
-
+import { cognitoService } from '../../src/awsconfig/cognitoUtils.js'
 
 // Crear Teacher
 const createTeacher = async (data = {}) => {
@@ -31,24 +31,30 @@ const createTeacher = async (data = {}) => {
    }
  };
 
- const userData ={
-  email:data.email,
-  password,
-  role:'teacher'
- }
+ const userParams = {
+  TableName: UserTable,
+  Item: {
+    id: cognitoId,
+    email: data.email,
+    role: 'teacher',
+    teacherId: teacherId,
+    createdAt: timestamp,
+    updatedAt: timestamp
+  }
+};
 
-console.log('Esta es la password de Model TEacher '+userData.password)
- /* const cognitoResult = await cognitoService.signUp(data.email, hashedPassword); */
 
+console.log('USUARIO COMPLETO '+JSON.stringify(data))
+console.log('Esta es la password de Model TEacher '+password)
+const cognitoResult = await cognitoService.signUp(data.email, password);
   try {
     await db.send(new PutCommand(params));
-    await User.createUser(userData);
+    await db.send(new PutCommand(userParams));
     return { success: true, id: teacherId };
   } catch (error) {
     console.error('Error creating teacher:', error.message);
     return { success: false, message: 'Error creating teacher', error: error.message };
   }
-
   
 };
 
