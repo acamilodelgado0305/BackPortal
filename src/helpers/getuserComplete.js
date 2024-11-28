@@ -4,10 +4,11 @@ import * as Student from '../Models/modelStudent.js';
 
 
 export const getUserComplete = async(id) => {
-    const otherUserCognito = await User.getUserById(id);
-    let otherUser; 
- 
-    
+    console.log('ESTE ES EL ID QUE Llegó a getUserComplete '+id);
+     otherUserCognito = await User.getUserById(id);
+    console.log('Esto es lo que devuelve '+JSON.stringify(otherUserCognito))
+     return otherUserCognito.data
+    /*
     if(otherUserCognito?.data?.role == "teacher"){
      return  otherUser = await Teacher.getTeacherById(otherUserCognito.data.teacherId);
 
@@ -20,6 +21,6 @@ export const getUserComplete = async(id) => {
       }else{
         return  otherUser = await Student.getStudentById(id);
       } 
-    }
+    } */
 
 }
