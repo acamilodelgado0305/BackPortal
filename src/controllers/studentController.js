@@ -51,3 +51,15 @@ export const updatestudentHandler = async (req, res) => {
     }
     return res.status(404).json({ success: false, message: result.message });
 };
+
+export const classAceptHandler = async (req, res) => {
+   const studentId = req.params.id;
+   const classHour= req.body;
+
+   const addClass = await student.classAcept(classHour, studentId)
+   if (addClass.success) {
+    return res.json({success: true, studentId, data:addClass.data})
+   }
+   return res.status(500).json({success: false, message:addClass.message})
+   
+}

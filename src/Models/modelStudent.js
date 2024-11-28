@@ -8,66 +8,37 @@ import { emailExists } from '../helpers/IsEmailExist.js';
 // Crear Student y Usuario
 const createStudent = async (data = {}) => {
   const timestamp = new Date().toISOString();
-  const studentId = uuidv4();
-  const hashedPassword = await bcrypt.hash(data.password, 10);
-
-  // Verificar que se haya recibido el teacherId en el body
-  if (!data.teacherId) {
-    return { success: false, message: 'teacherId is required to create a student.' };
-  }
+  //const studentId = uuidv4();
+  //const hashedPassword = await bcrypt.hash(data.password, 10);
 
   // Verificar si el correo ya está registrado en la tabla de usuarios
-  const isEmailTaken = await emailExists(data.email, UserTable);
+  const isEmailTaken = await emailExists(data.email, studentTable);
   if (isEmailTaken) {
     return { success: false, message: 'Email is already registered.' };
   }
-
-  // Separar la contraseña para evitar que se almacene en la tabla de estudiantes
-  const { password, ...studentData } = data;
-  
-  const cognitoId =  uuidv4();
+  //const cognitoId =  uuidv4();
  
   // Guardar el estudiante en la tabla de estudiantes (sin la contraseña)
   const studentParams = {
     TableName: studentTable,
     Item: {
-      ...studentData,
-      id: studentId,
-      teacherId: data.teacherId,
-      cognitoId:cognitoId,
+      ...data,
+      id: data.id,
+      misClases:[],
       createdAt: timestamp,
       updatedAt: timestamp
     }
   };
-
-  try {
+   try {
     // Guardar el estudiante en la tabla de estudiantes
-    await db.send(new PutCommand(studentParams));
+     await db.send(new PutCommand(studentParams));
 
-    // Guardar el usuario en la tabla de usuarios con el rol de 'student'
-    const userParams = {
-      TableName: UserTable,
-      Item: {
-        id: cognitoId,
-        email: data.email,
-        password: hashedPassword,
-        role: 'student',
-        studentId: studentId,
-        teacherId: data.teacherId,
-        createdAt: timestamp,
-        updatedAt: timestamp
-      }
-    };
+   return { success: true, id: data.id };
 
-    // Guardar el usuario en la tabla de usuarios
-    await db.send(new PutCommand(userParams));
-
-    return { success: true, id: studentId };
-
-  } catch (error) {
-    console.error('Error creating student or user:', error.message);
-    return { success: false, message: 'Error creating student or user', error: error.message };
-  }
+   } catch (error) {
+     console.error('Error creating student or user:', error.message);
+     return { success: false, message: 'Error creating student or user', error: error.message };
+   }
 };
 
 // Actualizar Student (sin afectar la tabla de usuarios)
@@ -153,10 +124,47 @@ const deleteStudentById = async (value, key = 'id') => {
   }
 };
 
+
+ 
+const classAcept = async (currentClass, id) =>{
+  const student = await getStudentById(id);
+  const timestamp = new Date().toISOString();
+  
+  let newStudent = {...student}
+  if (!student) {
+    return{success: false, message: "student not found"}
+  }
+  const clases = newStudent.data.misClases;
+  clases.push(currentClass);
+   newStudent.data.misClases = clases
+
+   const params = {
+    TableName: studentTable,
+    Item: {
+      ...student.data,
+      ...newStudent.data,
+      id: id,
+      updatedAt: timestamp
+    }
+   }
+  
+
+try {
+
+    await db.send(new PutCommand(params))
+  return { success: true, message: `hour add in my class`};
+
+} catch (error) {
+  console.error("error ingresando registrando la clase");
+  return { success: false, message: `error in add class`, error: error.message };
+
+}
+}
 export {
   createStudent,
   updateStudent,
   readAllStudents,
   getStudentById,
-  deleteStudentById
+  deleteStudentById,
+  classAcept
 };
