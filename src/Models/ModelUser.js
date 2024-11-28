@@ -59,7 +59,11 @@ export const createUser = async (data) => {
             TableName: UserTable,
             Item: {
                 id: userId,
+                firstName:data.name,
+                lastName:data.lastName,
                 email: data.email,
+                profileImageUrl:profileImageUrl,
+                cognitoId:cognitoResult.username, 
                 role: data.role,
                 emailVerified: false,
                 createdAt: timestamp,

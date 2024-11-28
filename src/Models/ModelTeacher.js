@@ -4,51 +4,60 @@ import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt'; // Usar bcrypt para encriptar contraseñas
 import { emailExists } from '../helpers/IsEmailExist.js';
 import * as User from './ModelUser.js';
-
+import { cognitoService } from '../../src/awsconfig/cognitoUtils.js'
 
 // Crear Teacher
 const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
-  const teacherId = uuidv4();  // Generar un UUID para un nuevo teacher
- const { password, ...dataWithoutPassword } = data;
+  const teacherId = uuidv4();  
+ const { password, confirmPassword, ...dataWithoutPassword } = data;
 
  const isEmailTaken = await emailExists(data.email, UserTable);
   if (isEmailTaken) {
     return { success: false, message: 'Email is already registered.' };
   }
  
-  const cognitoId =  uuidv4();
+  const userId =  uuidv4();
+  const cognitoResult = await cognitoService.signUp(data.email, password);
 
- const params = {
+ const userParams = {
+  TableName: UserTable,
+  Item: {
+    id: userId,
+    firstName:data.firstName,
+    lastName:data.lastName,
+    email: data.email,
+    profileImageUrl:data.profileImageUrl,
+    role: 'teacher',
+    roleId: teacherId,
+    cognitoId:cognitoResult.username, 
+    createdAt: timestamp,
+    updatedAt: timestamp
+  }
+};
+ const teacherParams = {
    TableName: Table,
    Item: {
      ...dataWithoutPassword,  
      id: teacherId, 
-     cognitoId:cognitoId,
+     userId:userId,
+     cognitoId:cognitoResult.username, 
      createdAt: timestamp,
      updatedAt: timestamp,
      status: false 
    }
  };
 
- const userData ={
-  email:data.email,
-  password,
-  role:'teacher'
- }
 
-console.log('Esta es la password de Model TEacher '+userData.password)
- /* const cognitoResult = await cognitoService.signUp(data.email, hashedPassword); */
 
   try {
-    await db.send(new PutCommand(params));
-    await User.createUser(userData);
+    await db.send(new PutCommand(teacherParams));
+    await db.send(new PutCommand(userParams));
     return { success: true, id: teacherId };
   } catch (error) {
     console.error('Error creating teacher:', error.message);
     return { success: false, message: 'Error creating teacher', error: error.message };
   }
-
   
 };
 
