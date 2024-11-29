@@ -39,5 +39,6 @@ export {
   UserTable,
   Table,
   studentTable,
-  standardMessagesTable
+  standardMessagesTable,
+  ClassTable
 };
