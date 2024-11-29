@@ -45,7 +45,7 @@ export const loginUserHandler = async (req, res) => {
                 id: user.data.id,
                 email: user.data.email,
                 role: user.data.role,
-                roleId: user.data.teacherId || user.data.studentId || null
+                roleId: user.data.roleId 
             }
         });
     } catch (error) {
