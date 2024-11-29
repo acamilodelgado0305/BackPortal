@@ -13,7 +13,9 @@ const createClass = async(data={})=>{
         teacherId: data.teacherId,
         studentId:data.studentId,
         date: data.date,
-        status:false 
+        hours: data.hours,
+        status:false,
+        createdAt: timestamp 
     }
     }
 
