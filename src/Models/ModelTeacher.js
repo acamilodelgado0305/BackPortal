@@ -10,7 +10,7 @@ import { cognitoService } from '../../src/awsconfig/cognitoUtils.js'
 const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
   const teacherId = uuidv4();  
- const {  ...dataWithoutPassword } = data;
+ const { password, confirmPassword, ...dataWithoutPassword } = data;
 
  const isEmailTaken = await emailExists(data.email, UserTable);
   if (isEmailTaken) {
@@ -18,7 +18,7 @@ const createTeacher = async (data = {}) => {
   }
  
   const userId =  uuidv4();
-  const cognitoResult = await cognitoService.signUp(data.email);
+  const cognitoResult = await cognitoService.signUp(data.email, password);
 
  const userParams = {
   TableName: UserTable,
