@@ -62,7 +62,7 @@ export const createUser = async (data) => {
                 firstName:data.name,
                 lastName:data.lastName,
                 email: data.email,
-                profileImageUrl:profileImageUrl,
+                profileImageUrl:data.profileImageUrl,
                 cognitoId:cognitoResult.username, 
                 role: data.role,
                 emailVerified: false,
