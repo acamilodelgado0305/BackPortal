@@ -1,5 +1,6 @@
 import * as StandardMessage from '../Models/ModelStandardMessage.js';
 import { getUserComplete } from '../helpers/getuserComplete.js';
+import * as User from "../Models/ModelUser.js"
 
 
 export const createStandardMessage = async (req, res) =>{
@@ -75,8 +76,8 @@ export const getStandardsMessagesChatsByUserId = async (req, res) => {
         const otherUserId = item.senderUserId === userId ? item.recipientUserId : item.senderUserId;
         let otherUser = null;
         try {
-          otherUser = await getUserComplete(otherUserId);
-          console.log('OTRO USUARIO '+JSON.stringify(otherUser))
+          otherUser = await User.getUserById(otherUserId);
+          // console.log('OTRO USUARIO '+JSON.stringify(otherUser))
         }catch(error) {
           console.log('Other user'+JSON.stringify(otherUser));
         }
@@ -85,7 +86,7 @@ export const getStandardsMessagesChatsByUserId = async (req, res) => {
           chatIndex,
           messages: [],
           me: userId,
-          otherUser, 
+          otherUser: otherUser.data, 
         });
         chatIndex++;
       }
