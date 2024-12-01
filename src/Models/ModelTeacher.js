@@ -4,60 +4,68 @@ import { v4 as uuidv4 } from 'uuid';
 import { emailExists } from '../helpers/IsEmailExist.js';
 import { cognitoService } from '../../src/awsconfig/cognitoUtils.js'
 
-// Crear Teacher
 const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
- const { password, confirmPassword, ...dataWithoutPassword } = data;
+  const teacherId = uuidv4();  // Generar un UUID para un nuevo teacher
+  const { password, ...dataWithoutPassword } = data;
 
- const isEmailTaken = await emailExists(data.email, UserTable);
+  // Validar que el email esté presente antes de hacer la comprobación
+  if (!data.email) {
+    return { success: false, message: 'Email is required.' };
+  }
+
+  const isEmailTaken = await emailExists(data.email, UserTable);
   if (isEmailTaken) {
     return { success: false, message: 'Email is already registered.' };
   }
- 
-  const userId =  uuidv4();
-  const cognitoResult = await cognitoService.signUp(data.email, password);
 
- const userParams = {
-  TableName: UserTable,
-  Item: {
-    id: userId,
-    firstName:data.firstName,
-    lastName:data.lastName,
-    email: data.email,
-    profileImageUrl:data.profileImageUrl,
-    role: 'teacher',
-    roleId: userId,
-    cognitoId:cognitoResult.username, 
-    createdAt: timestamp,
-    updatedAt: timestamp
+  // Validar la password antes de crear el usuario
+  if (!password) {
+    return { success: false, message: 'Password is required.' };
   }
-};
- const teacherParams = {
-   TableName: Table,
-   Item: {
-     ...dataWithoutPassword,  
-     id: userId, 
-     userId:userId,
-     cognitoId:cognitoResult.username, 
-     createdAt: timestamp,
-     updatedAt: timestamp,
-     status: false 
-   }
- };
 
+  const cognitoId = uuidv4();
 
+  // Construir parámetros para almacenar en la base de datos
+  const params = {
+    TableName: Table,
+    Item: {
+      ...dataWithoutPassword,
+      id: teacherId,
+      cognitoId: cognitoId,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      status: false, // Asumiendo que el status por defecto es 'false'
+    },
+  };
+
+  const userData = {
+    email: data.email,
+    password,
+    role: 'teacher',
+  };
+
+  console.log('Esta es la password de Model Teacher: ' + userData.password);
+
+  // Si se requiere que la password se procese (ej., cifrado), hazlo antes de intentar registrar al usuario
+  // const hashedPassword = await hashPassword(userData.password); // Si es necesario un hash
 
   try {
-    await db.send(new PutCommand(teacherParams));
-    await db.send(new PutCommand(userParams));
-    return { success: true, id: userId };
+    // Guardar el nuevo teacher en la base de datos
+    await db.send(new PutCommand(params));
+
+    // Crear el usuario en Cognito (suponiendo que esta función está habilitada)
+    /* const cognitoResult = await cognitoService.signUp(data.email, hashedPassword); */
+
+    // Registrar el usuario en otro sistema (si es necesario)
+    await User.createUser(userData);
+
+    return { success: true, id: teacherId };
   } catch (error) {
     console.error('Error creating teacher:', error.message);
     return { success: false, message: 'Error creating teacher', error: error.message };
   }
-  
 };
-
 
 const updateTeacher = async (id, data = {}) => {
   const timestamp = new Date().toISOString();
@@ -70,10 +78,10 @@ const updateTeacher = async (id, data = {}) => {
   const params = {
     TableName: Table,
     Item: {
-      ...existingTeacher.data, 
-      ...data,               
-      id: id,                
-      updatedAt: timestamp      
+      ...existingTeacher.data,
+      ...data,
+      id: id,
+      updatedAt: timestamp
     }
   };
 
