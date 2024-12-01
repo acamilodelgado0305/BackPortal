@@ -6,60 +6,32 @@ import { cognitoService } from '../../src/awsconfig/cognitoUtils.js'
 
 const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
-  const teacherId = uuidv4();  // Generar un UUID para un nuevo teacher
+  const teacherId = uuidv4();  // Generar un UUID para el teacher
   const { password, ...dataWithoutPassword } = data;
 
-  // Validar que el email esté presente antes de hacer la comprobación
-  if (!data.email) {
-    return { success: false, message: 'Email is required.' };
-  }
-
+  // Verificar si el correo ya está registrado
   const isEmailTaken = await emailExists(data.email, UserTable);
   if (isEmailTaken) {
     return { success: false, message: 'Email is already registered.' };
   }
 
-  // Validar la password antes de crear el usuario
-  if (!password) {
-    return { success: false, message: 'Password is required.' };
-  }
-
-  const cognitoId = uuidv4();
-
-  // Construir parámetros para almacenar en la base de datos
+  // Crear el registro del teacher en la tabla de User
   const params = {
     TableName: Table,
     Item: {
       ...dataWithoutPassword,
-      id: teacherId,
-      cognitoId: cognitoId,
+      id: teacherId, // Asignar el id generado
       createdAt: timestamp,
       updatedAt: timestamp,
-      status: false, // Asumiendo que el status por defecto es 'false'
-    },
+      status: false // El profesor no está activo aún
+    }
   };
-
-  const userData = {
-    email: data.email,
-    password,
-    role: 'teacher',
-  };
-
-  console.log('Esta es la password de Model Teacher: ' + userData.password);
-
-  // Si se requiere que la password se procese (ej., cifrado), hazlo antes de intentar registrar al usuario
-  // const hashedPassword = await hashPassword(userData.password); // Si es necesario un hash
 
   try {
-    // Guardar el nuevo teacher en la base de datos
+    // Insertar datos en la tabla de Users
     await db.send(new PutCommand(params));
 
-    // Crear el usuario en Cognito (suponiendo que esta función está habilitada)
-    /* const cognitoResult = await cognitoService.signUp(data.email, hashedPassword); */
-
-    // Registrar el usuario en otro sistema (si es necesario)
-    await User.createUser(userData);
-
+    // Aquí solo retornamos el teacherId, ya que Cognito se manejará más tarde
     return { success: true, id: teacherId };
   } catch (error) {
     console.error('Error creating teacher:', error.message);
