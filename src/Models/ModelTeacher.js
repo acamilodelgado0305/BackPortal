@@ -1,10 +1,8 @@
 import { Table, UserTable, db } from '../awsconfig/database.js';
 import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcrypt'; // Usar bcrypt para encriptar contraseñas
 import { emailExists } from '../helpers/IsEmailExist.js';
-import * as User from './ModelUser.js';
-
+import { cognitoService } from '../../src/awsconfig/cognitoUtils.js'
 
 const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
@@ -71,8 +69,6 @@ const createTeacher = async (data = {}) => {
 
 const updateTeacher = async (id, data = {}) => {
   const timestamp = new Date().toISOString();
-
-
   const existingTeacher = await getTeacherById(id);
 
   if (!existingTeacher.success) {

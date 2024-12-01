@@ -44,7 +44,10 @@ export const loginUserHandler = async (req, res) => {
             user: {
                 id: user.data.id,
                 email: user.data.email,
-                role: user.data.role
+                role: user.data.role,
+                roleId: user.data.roleId,
+                lastName:user.data.lastName,
+                firstName: user.data.firstName
             }
         });
     } catch (error) {
