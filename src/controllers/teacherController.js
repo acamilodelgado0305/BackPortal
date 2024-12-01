@@ -5,21 +5,15 @@ import { emailExists } from '../helpers/IsEmailExist.js';
 export const createTeacherHandler = async (req, res) => {
     const teacherData = req.body;
 
-    // Validar que los datos sean correctos antes de enviarlos a la función
-    if (!teacherData || !teacherData.email || !teacherData.password) {
-        return res.status(400).json({ success: false, message: 'Email and Password are required.' });
-    }
-
     try {
         const result = await Teacher.createTeacher(teacherData);
 
         if (result.success) {
+            // Devolver solo el id generado para el teacher
             return res.status(201).json({ success: true, id: result.id });
         }
-
         return res.status(500).json({ success: false, message: result.message });
     } catch (error) {
-        console.error('Error creating teacher handler:', error.message);
         return res.status(500).json({ success: false, message: 'Error creating teacher', error: error.message });
     }
 };
