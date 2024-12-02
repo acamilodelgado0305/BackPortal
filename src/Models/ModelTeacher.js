@@ -7,7 +7,8 @@ import { cognitoService } from '../../src/awsconfig/cognitoUtils.js'
 const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
   const teacherId = uuidv4();  // Generar un UUID para el teacher
-  const { password, ...dataWithoutPassword } = data;  // Eliminar la contraseña antes de guardar
+
+  const { firstName, lastName, email, password } = data;
 
   // Verificar si el correo ya está registrado
   const isEmailTaken = await emailExists(data.email, UserTable);
@@ -19,8 +20,10 @@ const createTeacher = async (data = {}) => {
   const params = {
     TableName: Table,
     Item: {
-      ...dataWithoutPassword,
       id: teacherId, // Asignar el id generado
+      firstName,  // Añadir los campos necesarios
+      lastName,
+      email,
       createdAt: timestamp,
       updatedAt: timestamp,
       status: false // El profesor no está activo aún
@@ -31,14 +34,14 @@ const createTeacher = async (data = {}) => {
     // Insertar datos en la tabla de Users
     await db.send(new PutCommand(params));
 
-    // Retornar el id, firstName, lastName y email en la respuesta
+    // Retornar los datos completos del profesor
     return {
       success: true,
       teacher: {
         id: teacherId,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email
+        firstName,
+        lastName,
+        email
       }
     };
   } catch (error) {
@@ -46,7 +49,6 @@ const createTeacher = async (data = {}) => {
     return { success: false, message: 'Error creating teacher', error: error.message };
   }
 };
-
 const updateTeacher = async (id, data = {}) => {
   const timestamp = new Date().toISOString();
   const existingTeacher = await getTeacherById(id);
