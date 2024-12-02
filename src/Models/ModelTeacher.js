@@ -8,7 +8,7 @@ const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
   const teacherId = uuidv4();  // Generar un UUID para el teacher
 
-  const { firstName, lastName, email, password } = data;
+  const { firstName, lastName, email, password, ...otherData } = data;
 
   // Verificar si el correo ya está registrado
   const isEmailTaken = await emailExists(data.email, UserTable);
@@ -20,6 +20,7 @@ const createTeacher = async (data = {}) => {
   const params = {
     TableName: Table,
     Item: {
+      ...otherData,
       id: teacherId, // Asignar el id generado
       firstName,  // Añadir los campos necesarios
       lastName,
@@ -29,7 +30,6 @@ const createTeacher = async (data = {}) => {
       status: false // El profesor no está activo aún
     }
   };
-
   try {
     // Insertar datos en la tabla de Users
     await db.send(new PutCommand(params));
