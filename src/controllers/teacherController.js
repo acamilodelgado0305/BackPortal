@@ -9,15 +9,10 @@ export const createTeacherHandler = async (req, res) => {
         const result = await Teacher.createTeacher(teacherData);
 
         if (result.success) {
-            // Devolver toda la información del profesor, no solo el id
+            // Devolver toda la información del profesor sin filtrar
             return res.status(201).json({
                 success: true,
-                teacher: {
-                    id: result.teacher.id,
-                    firstName: result.teacher.firstName,
-                    lastName: result.teacher.lastName,
-                    email: result.teacher.email
-                }
+                teacher: result.teacher // Devuelve todo el objeto
             });
         }
 
@@ -26,6 +21,8 @@ export const createTeacherHandler = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error creating teacher', error: error.message });
     }
 };
+
+
 export const checkTeacherEmailExists = async (req, res) => {
     try {
         const { email } = req.params;
