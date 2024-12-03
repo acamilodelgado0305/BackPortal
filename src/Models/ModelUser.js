@@ -50,7 +50,6 @@ export const createUser = async (data) => {
 
         // Crear usuario en Cognito
         const cognitoResult = await cognitoService.signUp(data.email, data.password);
-        console.log('Usuario registrado en Cognito:', cognitoResult.userSub);
 
         // Guardar en `UserTable`
         const timestamp = new Date().toISOString();
@@ -58,7 +57,7 @@ export const createUser = async (data) => {
         const params = {
             TableName: UserTable,
             Item: {
-                id: userId,
+                id: data.roleId || userId,
                 firstName: data.name,
                 lastName: data.lastName,
                 email: data.email,
@@ -88,7 +87,6 @@ export const createUser = async (data) => {
     }
 };
 
-// Leer Usuario por ID
 export const getUserById = async (id) => {
     if (!id) {
         return { success: false, message: 'ID es requerido' };
