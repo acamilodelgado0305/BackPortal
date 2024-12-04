@@ -7,7 +7,7 @@ const Table = "teacher_portal";
 const UserTable = "users-Esturio"
 const studentTable = "student_portal";
 const standardMessagesTable = 'standard-Messages-esturio';
-const ClassTable = "classes-Esturio"; // Dame el .js pare ejecutar y crear esta tabla
+const ClassTable = "classes-Esturio";
 dotenv.config()
 
 try {
