@@ -5,34 +5,39 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Crear reserva de clase
 const createClass = async (data = {}) => {
-  const timestamp = new Date().toISOString();
-  const classId = uuidv4();
-
-
-
-  // Guardar reserva de clase
-  const studentParams = {
-    TableName: class_reservations,
-    Item: {
-      ...data,
-      id:classId,
-      studentId: data.studentId,
-      teacherId: data.teacherId,
-      createdAt: timestamp,
-      updatedAt: timestamp
-    }
-  };
-
   try {
-    // Guardar el estudiante en la tabla de estudiantes
+    // Validar datos obligatorios
+    if (!data.studentId || !data.teacherId) {
+      throw new Error('studentId y teacherId son obligatorios.');
+    }
+
+    const timestamp = new Date().toISOString();
+    const classId = uuidv4();
+
+    // Parámetros para guardar en la base de datos
+    const studentParams = {
+      TableName: 'class_reservations', // Asegúrate de que esta tabla existe
+      Item: {
+        ...data,
+        id: classId,
+        studentId: data.studentId,
+        teacherId: data.teacherId,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+    };
+
+    // Guardar la reserva de clase
     await db.send(new PutCommand(studentParams));
 
-
     return { success: true, id: classId };
-
   } catch (error) {
-    console.error('Error creating class resrvation:', error.message);
-    return { success: false, message: 'Error creating student or user', error: error.message };
+    console.error('Error creating class reservation:', error.message);
+    return {
+      success: false,
+      message: error.message,
+      details: error.stack
+    };
   }
 };
 
@@ -100,8 +105,8 @@ const getClassReservationById = async (value, key = 'id') => {
     return { success: false, message: `Error reading class reservation with ${key} = ${value}`, error: error.message, data: null };
   }
 };
- // leer reservacion actual 
- const getClassReservationCurrentById = async (teacherId) => {
+// leer reservacion actual 
+const getClassReservationCurrentById = async (teacherId) => {
   const params = {
     TableName: class_reservations,
     IndexName: 'teacherId-index',
@@ -122,8 +127,8 @@ const getClassReservationById = async (value, key = 'id') => {
   }
 };
 
- // leer clase de estudiante
- const getClassReservationCurrentByIdStudent = async (studentId, teacherId) => {
+// leer clase de estudiante
+const getClassReservationCurrentByIdStudent = async (studentId, teacherId) => {
   const params = {
     TableName: 'class_reservations',
     IndexName: 'studentId-index', // Índice basado solo en studentId
