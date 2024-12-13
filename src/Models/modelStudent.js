@@ -1,9 +1,9 @@
 import { studentTable, db, UserTable } from '../awsconfig/database.js';
 import { PutCommand, GetCommand, ScanCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcrypt'; // Usar bcrypt para encriptar contraseñas
+import bcrypt from 'bcrypt'; 
 import { emailExists } from '../helpers/IsEmailExist.js';
-
+import * as User from './ModelUser.js'
 
 // Crear Student y Usuario
 const createStudent = async (data = {}) => {
@@ -29,8 +29,10 @@ const createStudent = async (data = {}) => {
       updatedAt: timestamp
     }
   };
-   try {
-    // Guardar el estudiante en la tabla de estudiantes
+
+     try {
+    if(data.url) 
+     await User.updateUserProfileImageUrl(data.id, data.url)
      await db.send(new PutCommand(studentParams));
 
    return { success: true, id: data.id };
@@ -41,11 +43,9 @@ const createStudent = async (data = {}) => {
    }
 };
 
-// Actualizar Student (sin afectar la tabla de usuarios)
 const updateStudent = async (id, data = {}) => {
   const timestamp = new Date().toISOString();
 
-  // Verificar si el Student existe antes de actualizar
   const existingStudent = await getStudentById(id);
 
   if (!existingStudent.success) {
@@ -61,7 +61,11 @@ const updateStudent = async (id, data = {}) => {
       updatedAt: timestamp
     }
   };
+
+
   try {
+    if(data.url) 
+      await User.updateUserProfileImageUrl(data.id, data.url)
     await db.send(new PutCommand(params));
     return { success: true, id: id };
   } catch (error) {

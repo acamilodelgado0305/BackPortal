@@ -11,7 +11,7 @@ router.use("/teachers", teacherRoutes);
 router.use("/users", userRoutes);
 router.use("/students", students);
 router.use("/standardMessages", standardMessages);
-router.use("/classes", classes);
+router.use("/clases", classes);
 
 
 export default router;

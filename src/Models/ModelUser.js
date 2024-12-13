@@ -186,6 +186,36 @@ export const updateUser = async (id, data) => {
         };
     }
 };
+export const updateUserProfileImageUrl = async (id, profileImageUrl) => {
+    if (!id || !profileImageUrl) {
+        return { success: false, message: 'ID y profileImageUrl son requeridos' };
+    }
+
+    const timestamp = new Date().toISOString();
+
+    const params = {
+        TableName: UserTable,
+        Key: { id },
+        UpdateExpression: 'SET #profileImageUrl = :profileImageUrl, updatedAt = :updatedAt',
+        ExpressionAttributeNames: {
+            '#profileImageUrl': 'profileImageUrl'
+        },
+        ExpressionAttributeValues: {
+            ':profileImageUrl': profileImageUrl,
+            ':updatedAt': timestamp
+        },
+        ReturnValues: 'ALL_NEW'
+    };
+
+    try {
+        const result = await db.send(new UpdateCommand(params));
+        return { success: true, data: result.Attributes };
+    } catch (error) {
+        console.error('Error actualizando profileImageUrl:', error);
+        return { success: false, message: 'Error al actualizar profileImageUrl' };
+    }
+};
+
 
 // Obtener Usuario por Email
 export const getUserByEmail = async (email) => {
