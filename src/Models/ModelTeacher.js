@@ -3,6 +3,7 @@ import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib
 import { v4 as uuidv4 } from 'uuid';
 import { emailExists } from '../helpers/IsEmailExist.js';
 import { cognitoService } from '../../src/awsconfig/cognitoUtils.js'
+import * as User from './ModelUser.js'
 
 const createTeacher = async (data = {}) => {
   const timestamp = new Date().toISOString();
@@ -68,6 +69,9 @@ const updateTeacher = async (id, data = {}) => {
   };
 
   try {
+     if(data.profileImageUrl) 
+         await User.updateUserProfileImageUrl(data.id, data.profileImageUrl)
+        
     await db.send(new PutCommand(params));
     return { success: true, id: id };
   } catch (error) {
