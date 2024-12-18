@@ -50,7 +50,6 @@ export const createUser = async (data) => {
 
         // Crear usuario en Cognito
         const cognitoResult = await cognitoService.signUp(data.email, data.password);
-        console.log('Usuario registrado en Cognito:', cognitoResult.userSub);
 
         // Guardar en `UserTable`
         const timestamp = new Date().toISOString();
@@ -58,13 +57,14 @@ export const createUser = async (data) => {
         const params = {
             TableName: UserTable,
             Item: {
-                id: userId,
-                firstName:data.name,
-                lastName:data.lastName,
+                id: data.roleId || userId,
+                firstName: data.name,
+                lastName: data.lastName,
                 email: data.email,
-                profileImageUrl:data.profileImageUrl,
-                cognitoId:cognitoResult.username, 
+                profileImageUrl: data.profileImageUrl,
+                cognitoId: cognitoResult.username,
                 role: data.role,
+                roleId: data.roleId,
                 emailVerified: false,
                 createdAt: timestamp,
                 updatedAt: timestamp
@@ -87,7 +87,6 @@ export const createUser = async (data) => {
     }
 };
 
-// Leer Usuario por ID
 export const getUserById = async (id) => {
     if (!id) {
         return { success: false, message: 'ID es requerido' };
@@ -187,6 +186,36 @@ export const updateUser = async (id, data) => {
         };
     }
 };
+export const updateUserProfileImageUrl = async (id, profileImageUrl) => {
+    if (!id || !profileImageUrl) {
+        return { success: false, message: 'ID y profileImageUrl son requeridos' };
+    }
+
+    const timestamp = new Date().toISOString();
+
+    const params = {
+        TableName: UserTable,
+        Key: { id },
+        UpdateExpression: 'SET #profileImageUrl = :profileImageUrl, updatedAt = :updatedAt',
+        ExpressionAttributeNames: {
+            '#profileImageUrl': 'profileImageUrl'
+        },
+        ExpressionAttributeValues: {
+            ':profileImageUrl': profileImageUrl,
+            ':updatedAt': timestamp
+        },
+        ReturnValues: 'ALL_NEW'
+    };
+
+    try {
+        const result = await db.send(new UpdateCommand(params));
+        return { success: true, data: result.Attributes };
+    } catch (error) {
+        console.error('Error actualizando profileImageUrl:', error);
+        return { success: false, message: 'Error al actualizar profileImageUrl' };
+    }
+};
+
 
 // Obtener Usuario por Email
 export const getUserByEmail = async (email) => {
