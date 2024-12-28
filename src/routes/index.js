@@ -13,9 +13,9 @@ router.use("/teachers", teacherRoutes);
 router.use("/users", userRoutes);
 router.use("/students", students);
 router.use("/standardMessages", standardMessages);
-router.use("/clases", classReservation);
+//router.use("/clases", classReservation);
 router.use("/clases", classes);
-router.use("/chime",meeting );
+router.use("/chime", meeting);
 
 
 export default router;
