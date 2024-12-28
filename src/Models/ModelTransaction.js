@@ -82,9 +82,28 @@ const deleteTransactionById = async (id) => {
     }
 };
 
+const getTransactionsByStudentId = async (studentId) => {
+    const params = {
+        TableName: TransactionTable,
+        FilterExpression: "studentId = :studentId",
+        ExpressionAttributeValues: {
+            ":studentId": studentId,
+        },
+    };
+
+    try {
+        const { Items = [] } = await db.send(new ScanCommand(params));
+        return { success: true, data: Items };
+    } catch (error) {
+        console.error(`Error fetching transactions for studentId ${studentId}:`, error.message);
+        return { success: false, message: `Error fetching transactions for studentId ${studentId}`, error: error.message, data: null };
+    }
+};
+
 export {
     createTransaction,
     getAllTransactions,
     getTransactionById,
     deleteTransactionById,
+    getTransactionsByStudentId,
 };
