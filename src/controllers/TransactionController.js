@@ -87,3 +87,20 @@ export const getTransactionsByStudentIdHandler = async (req, res) => {
         });
     }
 };
+export const getTransactionsByTeacherIdHandler = async (req, res) => {
+    const { teacherId } = req.params;
+
+    try {
+        const result = await Transaction.getTransactionsByTeacherId(teacherId);
+        if (result.success) {
+            return res.json({ success: true, data: result.data });
+        }
+        return res.status(404).json({ success: false, message: result.message });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching transactions for teacher',
+            error: error.message,
+        });
+    }
+};

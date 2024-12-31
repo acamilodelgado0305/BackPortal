@@ -100,10 +100,29 @@ const getTransactionsByStudentId = async (studentId) => {
     }
 };
 
+const getTransactionsByTeacherId = async (teacherId) => {
+    const params = {
+        TableName: TransactionTable,
+        FilterExpression: "teacherId = :teacherId",
+        ExpressionAttributeValues: {
+            ":teacherId": teacherId,
+        },
+    };
+
+    try {
+        const { Items = [] } = await db.send(new ScanCommand(params));
+        return { success: true, data: Items };
+    } catch (error) {
+        console.error(`Error fetching transactions for teacherId ${teacherId}:`, error.message);
+        return { success: false, message: `Error fetching transactions for teacherId ${teacherId}`, error: error.message, data: null };
+    }
+};
+
 export {
     createTransaction,
     getAllTransactions,
     getTransactionById,
     deleteTransactionById,
     getTransactionsByStudentId,
+    getTransactionsByTeacherId,
 };
