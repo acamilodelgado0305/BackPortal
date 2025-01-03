@@ -16,7 +16,7 @@ const attendees = {};
 
 // Crear una reunión con opciones avanzadas
 export const createMeeting = async (req, res) => {
-    const { externalUserId, meetingName, maxAttendees = 250, record = false } = req.body;
+    const { externalUserId, maxAttendees = 250 } = req.body;
 
     if (!externalUserId) {
         return res.status(400).json({ error: "El parámetro externalUserId es obligatorio" });
@@ -37,40 +37,17 @@ export const createMeeting = async (req, res) => {
         const createMeetingCommand = new CreateMeetingCommand(meetingParams);
         const meetingResponse = await chimeClient.send(createMeetingCommand);
 
-        // Guardar información detallada de la reunión
+        // Guardar información de la reunión sin asistentes iniciales
         meetings[meetingResponse.Meeting.MeetingId] = {
             ...meetingResponse.Meeting,
-            name: meetingName,
             createdAt: new Date().toISOString(),
             createdBy: externalUserId,
-            isRecording: record,
             attendees: {},
-        };
-
-        // Crear asistente para el creador con roles de moderador
-        const attendeeParams = {
-            MeetingId: meetingResponse.Meeting.MeetingId,
-            ExternalUserId: externalUserId,
-            Capabilities: {
-                Audio: "SendReceive",
-                Video: "SendReceive",
-                Content: "SendReceive",
-            }
-        };
-
-        const createAttendeeCommand = new CreateAttendeeCommand(attendeeParams);
-        const attendeeResponse = await chimeClient.send(createAttendeeCommand);
-
-        // Guardar información del asistente
-        meetings[meetingResponse.Meeting.MeetingId].attendees[externalUserId] = {
-            ...attendeeResponse.Attendee,
-            role: 'moderator',
-            joinedAt: new Date().toISOString()
+            isStarted: false, // Indica que la reunión aún no ha comenzado
         };
 
         res.status(201).json({
             meeting: meetingResponse.Meeting,
-            attendee: attendeeResponse.Attendee,
             message: "Reunión creada exitosamente",
         });
     } catch (error) {
@@ -79,7 +56,6 @@ export const createMeeting = async (req, res) => {
     }
 };
 
-// Unirse a una reunión con validaciones adicionales
 export const joinMeeting = async (req, res) => {
     const { meetingId, externalUserId, name } = req.body;
 
@@ -104,6 +80,7 @@ export const joinMeeting = async (req, res) => {
             return res.status(400).json({ error: "Ya eres parte de esta reunión" });
         }
 
+        // Agregar asistente a la reunión
         const attendeeParams = {
             MeetingId: meetingId,
             ExternalUserId: externalUserId,
@@ -125,6 +102,12 @@ export const joinMeeting = async (req, res) => {
             joinedAt: new Date().toISOString()
         };
 
+        // Iniciar la reunión si no está iniciada
+        if (!meetings[meetingId].isStarted) {
+            meetings[meetingId].isStarted = true;
+            meetings[meetingId].startedAt = new Date().toISOString();
+        }
+
         res.status(201).json({
             meeting: meeting,
             attendee: response.Attendee,
@@ -135,6 +118,7 @@ export const joinMeeting = async (req, res) => {
         res.status(500).json({ error: "Error al unirse a la reunión", details: error.message });
     }
 };
+
 
 // Obtener lista de participantes de una reunión
 export const listAttendees = async (req, res) => {

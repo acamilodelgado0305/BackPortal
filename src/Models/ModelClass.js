@@ -1,32 +1,49 @@
 import { db, ClassTable } from '../awsconfig/database.js'
 import { PutCommand, ScanCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
+import { createMeeting } from '../controllers/MeetingController.js';
 
 
-const createClass = async(data={})=>{
+const createClass = async (data = {}) => {
     const timestamp = new Date().toISOString();
     const classId = uuidv4();
+  
+    // Crear una reunión
+    const meetingData = {
+      externalUserId: data.teacherId, 
+    };
+  
+    const meetingResult = await createMeeting(meetingData);
+    console.log('Meeting data being sent:', meetingData);
+
+  
+    if (!meetingResult.success) {
+      console.error('Error creating meeting:', meetingResult.error);
+      return { success: false, message: 'Error creating class', error: meetingResult.error };
+    }
+  
     const classParams = {
-        TableName: ClassTable,
-        Item: { 
+      TableName: ClassTable,
+      Item: {
         id: classId,
         teacherId: data.teacherId,
-        studentId:data.studentId,
+        studentId: data.studentId,
         date: data.date,
         hours: data.hours,
-        status:false,
-        createdAt: timestamp 
-    }
-    }
-
+        status: false,
+        createdAt: timestamp,
+        meetingId: meetingResult.meeting.MeetingId 
+      }
+    };
+  
     try {
-        await db.send(new PutCommand(classParams));
-        return { success: true, id: classId };
+      await db.send(new PutCommand(classParams));
+      return { success: true, id: classId };
     } catch (error) {
-       console.error('Error creating class:', error.message);
-       return { success: false, message: 'Error creating class', error: error.message };
+      console.error('Error creating class:', error.message);
+      return { success: false, message: 'Error creating class', error: error.message };
     }
-}
+  };
 
 
 const updateClass = async (id, data = {}) =>{
