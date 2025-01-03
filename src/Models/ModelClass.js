@@ -5,6 +5,7 @@ import { createMeeting } from '../controllers/MeetingController.js';
 
 
 const createClass = async (data = {}) => {
+const createClass = async (data = {}) => {
     const timestamp = new Date().toISOString();
     const classId = uuidv4();
   
@@ -46,35 +47,35 @@ const createClass = async (data = {}) => {
   };
 
 
-const updateClass = async (id, data = {}) =>{
+const updateClass = async (id, data = {}) => {
     const timestamp = new Date().toISOString();
     const existingClass = await getClassById(id);
 
     if (!existingClass.success) {
         return { success: false, message: 'Class not found, cannot update' };
-      }
+    }
 
     const classParams = {
         TableName: ClassTable,
-        Item: { 
-       ...existingClass.data,
-       ...data,
-       id:id, 
-       updateAt:timestamp
+        Item: {
+            ...existingClass.data,
+            ...data,
+            id: id,
+            updateAt: timestamp
+        }
     }
-    }  
 
     try {
         await db.send(new PutCommand(classParams));
-        return { success: true, id: id}
-    } catch (error){
+        return { success: true, id: id }
+    } catch (error) {
         console.error('Error updating class ', error.message);
-        return { success: false, message:'Error updating class ', error: error.message}
+        return { success: false, message: 'Error updating class ', error: error.message }
     }
 
 }
 
-const readAllClass = async () =>{
+const readAllClass = async () => {
     const params = {
         TableName: ClassTable
     };
@@ -83,54 +84,54 @@ const readAllClass = async () =>{
         const { Items = [] } = await db.send(new ScanCommand(params));
         return { success: true, data: Items }
     } catch (error) {
-      console.error('Error reading all classes: ', error.message);
-      return { success: false, message: 'Error reading all classes ', error: error.message , data: null } 
+        console.error('Error reading all classes: ', error.message);
+        return { success: false, message: 'Error reading all classes ', error: error.message, data: null }
     }
 }
 
-const getClassById = async(value, key='id') => {
+const getClassById = async (value, key = 'id') => {
     const params = {
         TableName: ClassTable,
         Key: {
-            [key]:value
+            [key]: value
         }
     };
     try {
         const { Item = {} } = await db.send(new GetCommand(params));
         if (Object.keys(Item).length === 0) {
             return { success: false, message: 'Class not found', data: null };
-          }
-          return { success: true, data: Item };
+        }
+        return { success: true, data: Item };
     } catch (error) {
         console.error(`Error reading Class with ${key} = ${value}:`, error.message);
-    return { success: false, message: `Error reading Class with ${key} = ${value}`, error: error.message, data: null };
+        return { success: false, message: `Error reading Class with ${key} = ${value}`, error: error.message, data: null };
     }
 }
 
 const deleteClassById = async (value, key = 'id') => {
     const params = {
-      TableName: ClassTable,
-      Key: {
-        [key]: value 
-      }
+        TableName: ClassTable,
+        Key: {
+            [key]: value
+        }
     };
-  
-    try {
-      await db.send(new DeleteCommand(params));
-      return { success: true, message: `Class with ${key} = ${value} deleted successfully` };
-    } catch (error) {
-      console.error(`Error deleting Class with ${key} = ${value}:`, error.message);
-      return { success: false, message: `Error deleting Class with ${key} = ${value}`, error: error.message };
-    }
-  };
-  
 
-  const classExist = async (id) => {
+    try {
+        await db.send(new DeleteCommand(params));
+        return { success: true, message: `Class with ${key} = ${value} deleted successfully` };
+    } catch (error) {
+        console.error(`Error deleting Class with ${key} = ${value}:`, error.message);
+        return { success: false, message: `Error deleting Class with ${key} = ${value}`, error: error.message };
+    }
+};
+
+
+const classExist = async (id) => {
     const result = await getClassById(id);
     return result.success;
-  };
+};
 
-  const getClassesByTeacherId = async (teacherId) => {
+const getClassesByTeacherId = async (teacherId) => {
     const params = {
         TableName: ClassTable,
         FilterExpression: "teacherId = :teacherId",
