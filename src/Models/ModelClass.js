@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createMeeting } from '../controllers/MeetingController.js';
 
 
-const createClass = async (data = {}) => {
+
 const createClass = async (data = {}) => {
     const timestamp = new Date().toISOString();
     const classId = uuidv4();
