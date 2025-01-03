@@ -15,11 +15,9 @@ const meetings = {};
 const attendees = {};
 
 // Crear una reunión con opciones avanzadas
-export const createMeeting = async (req, res) => {
-    const { externalUserId, maxAttendees = 250 } = req.body;
-
+export const createMeeting = async ({ externalUserId, maxAttendees = 250 }) => {
     if (!externalUserId) {
-        return res.status(400).json({ error: "El parámetro externalUserId es obligatorio" });
+        return { success: false, error: "El parámetro externalUserId es obligatorio" };
     }
 
     try {
@@ -46,15 +44,14 @@ export const createMeeting = async (req, res) => {
             isStarted: false, // Indica que la reunión aún no ha comenzado
         };
 
-        res.status(201).json({
-            meeting: meetingResponse.Meeting,
-            message: "Reunión creada exitosamente",
-        });
+        return { success: true, meeting: meetingResponse.Meeting };
     } catch (error) {
         console.error("Error creating meeting:", error);
-        res.status(500).json({ error: "Error al crear la reunión", details: error.message });
+        return { success: false, error: error.message };
     }
 };
+
+
 
 export const joinMeeting = async (req, res) => {
     const { meetingId, externalUserId, name } = req.body;
