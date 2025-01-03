@@ -17,7 +17,7 @@ const attendees = {};
 // Crear una reunión con opciones avanzadas
 export const createMeeting = async ({ externalUserId, maxAttendees = 250 }) => {
     if (!externalUserId) {
-        return { success: false, error: "El parámetro externalUserId es obligatorio" };
+        return { success: false, error: "externalUserId es obligatorio" };
     }
 
     try {
@@ -35,13 +35,12 @@ export const createMeeting = async ({ externalUserId, maxAttendees = 250 }) => {
         const createMeetingCommand = new CreateMeetingCommand(meetingParams);
         const meetingResponse = await chimeClient.send(createMeetingCommand);
 
-        // Guardar información de la reunión sin asistentes iniciales
         meetings[meetingResponse.Meeting.MeetingId] = {
             ...meetingResponse.Meeting,
             createdAt: new Date().toISOString(),
             createdBy: externalUserId,
             attendees: {},
-            isStarted: false, // Indica que la reunión aún no ha comenzado
+            isStarted: false
         };
 
         return { success: true, meeting: meetingResponse.Meeting };
@@ -51,33 +50,15 @@ export const createMeeting = async ({ externalUserId, maxAttendees = 250 }) => {
     }
 };
 
-
-
 export const joinMeeting = async (req, res) => {
     const { meetingId, externalUserId, name } = req.body;
 
-    if (!meetingId || !externalUserId) {
-        return res.status(400).json({ error: "Faltan parámetros requeridos" });
-    }
-
     try {
-        // Verificar si la reunión existe y tiene espacio
         const meeting = meetings[meetingId];
         if (!meeting) {
             return res.status(404).json({ error: "Reunión no encontrada" });
         }
 
-        const attendeeCount = Object.keys(meeting.attendees).length;
-        if (attendeeCount >= meeting.MaxAttendees) {
-            return res.status(403).json({ error: "La reunión está llena" });
-        }
-
-        // Verificar si el usuario ya está en la reunión
-        if (meeting.attendees[externalUserId]) {
-            return res.status(400).json({ error: "Ya eres parte de esta reunión" });
-        }
-
-        // Agregar asistente a la reunión
         const attendeeParams = {
             MeetingId: meetingId,
             ExternalUserId: externalUserId,
@@ -91,28 +72,26 @@ export const joinMeeting = async (req, res) => {
         const command = new CreateAttendeeCommand(attendeeParams);
         const response = await chimeClient.send(command);
 
-        // Guardar información del nuevo asistente
-        meetings[meetingId].attendees[externalUserId] = {
+        if (!meeting.isStarted) {
+            meeting.isStarted = true;
+            meeting.startedAt = new Date().toISOString();
+        }
+
+        meeting.attendees[externalUserId] = {
             ...response.Attendee,
             name: name || externalUserId,
             role: 'participant',
             joinedAt: new Date().toISOString()
         };
 
-        // Iniciar la reunión si no está iniciada
-        if (!meetings[meetingId].isStarted) {
-            meetings[meetingId].isStarted = true;
-            meetings[meetingId].startedAt = new Date().toISOString();
-        }
-
         res.status(201).json({
             meeting: meeting,
             attendee: response.Attendee,
-            message: "Te has unido a la reunión exitosamente",
+            message: "Te has unido a la reunión exitosamente"
         });
     } catch (error) {
         console.error("Error joining meeting:", error);
-        res.status(500).json({ error: "Error al unirse a la reunión", details: error.message });
+        res.status(500).json({ error: "Error al unirse a la reunión" });
     }
 };
 
