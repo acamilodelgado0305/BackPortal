@@ -10,6 +10,7 @@ const standardMessagesTable = 'standard-Messages-esturio';
 const ClassTable = "classes-Esturio";
 const class_reservations = "class_reservations";
 const TransactionTable = "transactions_esturio";
+const CardTable = "card-user"
 dotenv.config()
 
 try {
@@ -45,4 +46,5 @@ export {
   ClassTable,
   class_reservations,
   TransactionTable,
+  CardTable
 };
