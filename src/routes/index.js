@@ -7,6 +7,7 @@ import classReservation from "./classReservation.routes.js"
 import classes from "./class.routes.js"
 import meeting from "./MeetingRoutes.js"
 import transactionRoutes from "./transactionRoutes.js";
+import card from "./cardRoutes.js"
 const router = express.Router();
 
 router.use("/teachers", teacherRoutes);
@@ -17,5 +18,6 @@ router.use("/standardMessages", standardMessages);
 router.use("/clases", classes);
 router.use("/chime", meeting);
 router.use("/transactions", transactionRoutes);
+router.use("/card", card);
 
 export default router;
