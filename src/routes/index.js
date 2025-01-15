@@ -8,16 +8,17 @@ import classes from "./class.routes.js"
 import meeting from "./MeetingRoutes.js"
 import transactionRoutes from "./transactionRoutes.js";
 import card from "./cardRoutes.js"
+import usersLanding from "./usersLandingRoutes.js"
 const router = express.Router();
 
 router.use("/teachers", teacherRoutes);
 router.use("/users", userRoutes);
 router.use("/students", students);
 router.use("/standardMessages", standardMessages);
-//router.use("/clases", classReservation);
 router.use("/clases", classes);
 router.use("/chime", meeting);
 router.use("/transactions", transactionRoutes);
 router.use("/card", card);
+router.use("/usersLanding", usersLanding);
 
 export default router;

@@ -11,6 +11,7 @@ const ClassTable = "classes-Esturio";
 const class_reservations = "class_reservations";
 const TransactionTable = "transactions_esturio";
 const CardTable = "card-user"
+const UsersLanding = "users_landing"
 dotenv.config()
 
 try {
@@ -46,5 +47,7 @@ export {
   ClassTable,
   class_reservations,
   TransactionTable,
-  CardTable
+  CardTable,
+  UsersLanding
+  
 };
