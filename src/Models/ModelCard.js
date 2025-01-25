@@ -67,9 +67,17 @@ const updateCardRecord = async (cardId, userId, updateData) => {
         Key: {
             id: cardId,
         },
-        UpdateExpression: "set #number = :number, expiration = :expiration, firstName = :firstName, lastName = :lastName, country = :country, billingAddress1 = :billingAddress1, billingAddress2 = :billingAddress2",
+        UpdateExpression: `
+            set #number = :number, 
+                expiration = :expiration, 
+                firstName = :firstName, 
+                lastName = :lastName, 
+                country = :country, 
+                billingAddress1 = :billingAddress1, 
+                billingAddress2 = :billingAddress2
+        `,
         ExpressionAttributeNames: {
-            "#number": "number",
+            "#number": "number", // "number" es una palabra reservada en DynamoDB, por eso usamos un alias.
         },
         ExpressionAttributeValues: {
             ":number": updateData.number,
@@ -79,11 +87,9 @@ const updateCardRecord = async (cardId, userId, updateData) => {
             ":country": updateData.country,
             ":billingAddress1": updateData.billingAddress1,
             ":billingAddress2": updateData.billingAddress2,
-        },
-        ConditionExpression: "userId = :userId",
-        ExpressionAttributeValues: {
             ":userId": userId,
         },
+        ConditionExpression: "userId = :userId",
         ReturnValues: "ALL_NEW",
     };
 
@@ -91,8 +97,8 @@ const updateCardRecord = async (cardId, userId, updateData) => {
         const { Attributes } = await db.send(new UpdateCommand(updateParams));
         return { success: true, data: Attributes };
     } catch (error) {
-        console.error('Error updating card details:', error.message);
-        return { success: false, message: 'Error updating card details', error: error.message };
+        console.error("Error updating card details:", error.message);
+        return { success: false, message: "Error updating card details", error: error.message };
     }
 };
 
