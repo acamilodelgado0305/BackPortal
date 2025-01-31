@@ -1,7 +1,7 @@
-import { PutCommand, GetCommand, DeleteCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, UpdateCommand, ScanCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { db, UsersLanding } from '../awsconfig/database.js';
 
-// Crear un nuevo usuario
+// 🔹 Crear un nuevo usuario con `createdAt`
 export const createUser = async (req, res) => {
   const { name, email } = req.body;
 
@@ -10,13 +10,17 @@ export const createUser = async (req, res) => {
   }
 
   try {
+    const timestamp = new Date().toISOString();
+
     const params = {
       TableName: UsersLanding,
       Item: {
-        id: `user-${Date.now()}`, // Generar un ID único
+        id: `user-${Date.now()}`, // ID único
         name,
-        email
-      }
+        email,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      },
     };
 
     await db.send(new PutCommand(params));
@@ -27,22 +31,58 @@ export const createUser = async (req, res) => {
   }
 };
 
-// Obtener todos los usuarios
-export const getAllUsers = async (req, res) => {
+// 🔹 Actualizar un usuario con `updatedAt`
+export const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { name, email } = req.body;
+
+  if (!name || !email) {
+    return res.status(400).json({ message: 'Faltan datos obligatorios.' });
+  }
+
   try {
+    const timestamp = new Date().toISOString();
+
     const params = {
-      TableName: UsersLanding
+      TableName: UsersLanding,
+      Key: { id },
+      UpdateExpression: 'SET name = :name, email = :email, updatedAt = :updatedAt',
+      ExpressionAttributeValues: {
+        ':name': name,
+        ':email': email,
+        ':updatedAt': timestamp
+      },
+      ReturnValues: 'ALL_NEW'
     };
 
+    const { Attributes } = await db.send(new UpdateCommand(params));
+    res.status(200).json({ message: 'Usuario actualizado con éxito.', user: Attributes });
+  } catch (error) {
+    console.error('Error al actualizar usuario:', error);
+    res.status(500).json({ message: 'Error interno al actualizar usuario.' });
+  }
+};
+
+// 🔹 Obtener todos los usuarios incluyendo `createdAt`
+export const getAllUsers = async (req, res) => {
+  try {
+    const params = { TableName: UsersLanding };
     const { Items } = await db.send(new ScanCommand(params));
-    res.status(200).json(Items);
+
+    res.status(200).json(Items.map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      createdAt: user.createdAt || 'No disponible', // 📌 Si no existe, mostrar "No disponible"
+      updatedAt: user.updatedAt || 'No disponible'
+    })));
   } catch (error) {
     console.error('Error al obtener los usuarios:', error);
     res.status(500).json({ message: 'Error interno al obtener los usuarios.' });
   }
 };
 
-// Eliminar un usuario por ID
+// 🔹 Eliminar un usuario
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
 
