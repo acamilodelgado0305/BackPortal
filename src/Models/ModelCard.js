@@ -78,9 +78,6 @@ const updateCardRecord = async (cardId, userId, updateData) => {
                 country = :country, 
                 billingAddress1 = :billingAddress1, 
                 billingAddress2 = :billingAddress2
-                position= :position,
-                automatic= : automatic,
-                billinperiod= :billinperiod,
         `,
         ExpressionAttributeNames: {
             "#number": "number", // "number" es una palabra reservada en DynamoDB, por eso usamos un alias.
@@ -93,9 +90,6 @@ const updateCardRecord = async (cardId, userId, updateData) => {
             ":country": updateData.country,
             ":billingAddress1": updateData.billingAddress1,
             ":billingAddress2": updateData.billingAddress2,
-            "position": updateData.position,
-            "automatic": updateData.automatic,
-            "billinperiod": updateData.billinperiod,
             ":userId": userId,
         },
         ConditionExpression: "userId = :userId",
