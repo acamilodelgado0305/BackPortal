@@ -8,6 +8,7 @@ import classes from "./class.routes.js"
 import meeting from "./MeetingRoutes.js"
 import transactionRoutes from "./transactionRoutes.js";
 import card from "./cardRoutes.js"
+import paymentRoutes from "./payment.routes.js";
 import usersLanding from "./usersLandingRoutes.js"
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use("/chime", meeting);
 router.use("/transactions", transactionRoutes);
 router.use("/card", card);
 router.use("/usersLanding", usersLanding);
+router.use("/payments", paymentRoutes);
 
 export default router;
