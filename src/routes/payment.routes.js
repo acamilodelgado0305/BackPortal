@@ -60,4 +60,35 @@ router.post("/process-payment", async (req, res) => {
     }
 });
 
-export default router; 
+
+// Endpoint para guardar la tarjeta de forma segura
+router.post("/save-card", async (req, res) => {
+    const { paymentMethodNonce, customerId } = req.body;
+
+    if (!paymentMethodNonce || !customerId) {
+        return res.status(400).json({ error: "paymentMethodNonce y customerId son requeridos" });
+    }
+
+    try {
+        // Crear un Payment Method asociado al cliente
+        const result = await gateway.paymentMethod.create({
+            customerId: customerId,  // ID del cliente que ya existe en Braintree
+            paymentMethodNonce: paymentMethodNonce,
+            options: {
+                makeDefault: true,  // Marca esta tarjeta como la tarjeta por defecto del cliente
+            },
+        });
+
+        if (result.success) {
+            res.json({ success: true, paymentMethod: result.paymentMethod });
+        } else {
+            res.status(500).json({ error: result.message });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+export default router;
+
