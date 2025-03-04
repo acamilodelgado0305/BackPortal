@@ -174,7 +174,7 @@ export const updateUser = async (id, data) => {
         ExpressionAttributeValues: expressionAttributeValues,
         ReturnValues: 'ALL_NEW'
     };
-
+     
     try {
         const result = await db.send(new UpdateCommand(params));
         return { success: true, data: result.Attributes };
@@ -213,6 +213,35 @@ export const updateUserProfileImageUrl = async (id, profileImageUrl) => {
     } catch (error) {
         console.error('Error actualizando profileImageUrl:', error);
         return { success: false, message: 'Error al actualizar profileImageUrl' };
+    }
+};
+export const updateIdPaypal = async (id, paypalId) => {
+    if (!id || !paypalId) {
+        return { success: false, message: 'ID y paypalId son requeridos' };
+    }
+
+    const timestamp = new Date().toISOString();
+
+    const params = {
+        TableName: UserTable,
+        Key: { id },
+        UpdateExpression: 'SET #paypalId = :paypalId, updatedAt = :updatedAt',
+        ExpressionAttributeNames: {
+            '#paypalId': 'paypalId'
+        },
+        ExpressionAttributeValues: {
+            ':paypalId': paypalId,
+            ':updatedAt': timestamp
+        },
+        ReturnValues: 'ALL_NEW'
+    };
+
+    try {
+        const result = await db.send(new UpdateCommand(params));
+        return { success: true, data: result.Attributes };
+    } catch (error) {
+        console.error('Error actualizando el paypal id:', error);
+        return { success: false, message: 'Error al actualizar paypalId' };
     }
 };
 
