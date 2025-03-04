@@ -5,46 +5,61 @@ import { createMeeting } from '../controllers/MeetingController.js';
 
 
 
-const createClass = async (data = {}) => {
-    const timestamp = new Date().toISOString();
-    const classId = uuidv4();
-  
-    // Crear una reunión
-    const meetingData = {
-      externalUserId: data.teacherId, // Usar el ID del profesor como externalUserId
-     
+import { ChimeSDKMeetingsClient, CreateMeetingCommand } from "@aws-sdk/client-chime-sdk-meetings";
 
-    };
+const chimeClient = new ChimeSDKMeetingsClient({ region: "us-east-1" });
+
+/*const createMeeting = async (meetingData) => {
+  try {
+    const command = new CreateMeetingCommand(meetingData);
+    const response = await chimeClient.send(command);
+    return { success: true, meeting: response.Meeting };
+  } catch (error) {
+    console.error("Error creating meeting:", error);
+    return { success: false, error: error.message };
+  }
+};
+*/
+const createClass = async (data = {}) => {
+  const timestamp = new Date().toISOString();
+  const classId = uuidv4();
+
+  // Crear una reunión
+ /* const meetingData = {
+    ClientRequestToken: uuidv4(), // Un token único para evitar duplicados
+    MediaRegion: 'us-east-1', // La región donde se creará la reunión
+    ExternalMeetingId: classId // Un identificador externo para la reunión
+  };
   
-    const meetingResult = await createMeeting(meetingData);
-  
-    if (!meetingResult.success) {
-      console.error('Error creating meeting:', meetingResult.error);
-      return { success: false, message: 'Error creating class', error: meetingResult.error };
-    }
-  
-    const classParams = {
-      TableName: ClassTable,
-      Item: {
-        id: classId,
-        teacherId: data.teacherId,
-        studentId: data.studentId,
-        date: data.date,
-        hours: data.hours,
-        status: false,
-        createdAt: timestamp,
-        meetingId: meetingResult.meeting.MeetingId
-      }
-    };
-  
-    try {
-      await db.send(new PutCommand(classParams));
-      return { success: true, id: classId };
-    } catch (error) {
-      console.error('Error creating class:', error.message);
-      return { success: false, message: 'Error creating class', error: error.message };
+  const meetingResult = await createMeeting(meetingData);
+ console.log(meetingResult)
+  if (!meetingResult.success) {
+    console.error('Error creating meeting:', meetingResult.error);
+    return { success: false, message: 'Error creating class', error: meetingResult.error };
+  }
+*/
+  const classParams = {
+    TableName: ClassTable,
+    Item: {
+      id: classId,
+      teacherId: data.teacherId,
+      studentId: data.studentId,
+      date: data.date,
+      hours: data.hours,
+      status: false,
+      createdAt: timestamp,
+      meetingId: classId //meetingResult.meeting.MeetingId
     }
   };
+
+  try {
+    await db.send(new PutCommand(classParams));
+    return { success: true, id: classId };
+  } catch (error) {
+    console.error('Error creating class:', error.message);
+    return { success: false, message: 'Error creating class', error: error.message };
+  }
+};
 
 
 const updateClass = async (id, data = {}) => {

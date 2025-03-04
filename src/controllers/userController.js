@@ -47,7 +47,8 @@ export const loginUserHandler = async (req, res) => {
                 role: user.data.role,
                 roleId: user.data.roleId,
                 lastName:user.data.lastName,
-                firstName: user.data.firstName
+                firstName: user.data.firstName,
+                paypalId: user.data.paypalId
             }
         });
     } catch (error) {
